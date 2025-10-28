@@ -18,14 +18,6 @@ import {
 
 export const description = "A pie chart with a label";
 
-const chartData = [
-  { time: "yesterday", bookings: 275, fill: "var(--color-yesterday)" },
-  { time: "lastWeek", bookings: 200, fill: "var(--color-lastWeek)" },
-  { time: "lastMonth", bookings: 187, fill: "var(--color-lastMonth)" },
-  { time: "last3Months", bookings: 173, fill: "var(--color-last3Months)" },
-  { time: "last6Months", bookings: 90, fill: "var(--color-last6Months)" },
-];
-
 const chartConfig = {
   yesterday: {
     label: "Yesterday",
@@ -49,7 +41,7 @@ const chartConfig = {
   },
 };
 
-export function ChartPieLabel() {
+export function ChartPieLabel({ data }) {
   return (
     <Card className="flex flex-col">
       <CardHeader className="items-center pb-0">
@@ -63,7 +55,7 @@ export function ChartPieLabel() {
         >
           <PieChart>
             <ChartTooltip content={<ChartTooltipContent hideLabel />} />
-            <Pie data={chartData} dataKey="bookings" label nameKey="time" />
+            <Pie data={data} dataKey="bookings" label nameKey="time" />
             <ChartLegend content={<ChartLegendContent />} />
           </PieChart>
         </ChartContainer>

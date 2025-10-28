@@ -19,6 +19,7 @@ const CategoryView = lazy(() => import("./pages/CategoryView"));
 const City = lazy(() => import("./pages/City"));
 const CityView = lazy(() => import("./pages/CityView"));
 const RentalPackages = lazy(() => import("./pages/RentalPackages"));
+const BookingDetails = lazy(() => import("./pages/BookingDetails"));
 
 const App = () => {
   return (
@@ -43,6 +44,7 @@ const App = () => {
         <Route path="/cars-categories/:id" element={<CategoryView />} />
         <Route path="/cars/profile/:id" element={<CarProfile />} />
         <Route path="/bookings" element={<Bookings />} />
+        <Route path="/bookings/:id" element={<BookingDetails />} />
         <Route path="/rental-packages" element={<RentalPackages />} />
       </Route>
       <Route

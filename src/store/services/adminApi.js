@@ -6,6 +6,7 @@ export const adminApi = createApi({
     baseUrl: import.meta.env.VITE_API_URL,
     credentials: "include",
   }),
+
   tagTypes: [
     "TravelPackage",
     "RentalPackage",
@@ -15,7 +16,12 @@ export const adminApi = createApi({
     "Vendor",
     "Cars",
     "Car",
+    "Bookings",
+    "dashboardStats",
+    "UserStats",
+    "VendorStats",
   ],
+
   endpoints: (builder) => ({
     // Check Admin Authentication
     checkAdmin: builder.query({
@@ -38,11 +44,19 @@ export const adminApi = createApi({
         method: "POST",
       }),
     }),
+    // Get Dashboard Stats
+    getDashboardStats: builder.query({
+      query: () => ({
+        url: "/admin/dashboard-stats",
+      }),
+      providesTags: ["dashboardStats"],
+    }),
     // Get User Stats
     getUserStats: builder.query({
       query: () => ({
         url: "/admin/user-stats",
       }),
+      providesTags: ["UserStats"],
     }),
     // Get All Users
     getAllUsers: builder.query({
@@ -66,7 +80,7 @@ export const adminApi = createApi({
       query: () => ({
         url: "/admin/vendor-stats",
       }),
-      providesTags: ["Vendor"],
+      providesTags: ["VendorStats"],
     }),
     // Get All Vendors
     getAllVendors: builder.query({
@@ -104,9 +118,35 @@ export const adminApi = createApi({
     }),
     // Get All Bookings
     getAllBookings: builder.query({
-      query: () => ({
+      query: ({ search = "", page = 1, resultPerPage = 10 }) => ({
         url: "/admin/bookings",
+        params: {
+          search,
+          page,
+          resultPerPage,
+        },
       }),
+      providesTags: ["Bookings"],
+    }),
+    getAbooking: builder.query({
+      query: (id) => ({
+        url: `/admin/bookings/${id}`,
+      }),
+    }),
+    assignVendorToBooking: builder.mutation({
+      query: ({ bookingId, vendorId }) => ({
+        url: `/admin/bookings/${bookingId}/assign-vendor`,
+        method: "POST",
+        body: { vendorId },
+      }),
+      invalidatesTags: ["Bookings"],
+    }),
+    rejectBooking: builder.mutation({
+      query: (bookingId) => ({
+        url: `/admin/bookings/${bookingId}/reject-booking`,
+        method: "POST",
+      }),
+      invalidatesTags: ["Bookings", "dashboardStats"],
     }),
     // Get Travel Packages
     getAllTravelPackages: builder.query({
@@ -208,6 +248,14 @@ export const adminApi = createApi({
       }),
       invalidatesTags: ["CarCategory"],
     }),
+    addCarToCategory: builder.mutation({
+      query: ({ categoryId, carNames }) => ({
+        url: `/admin/car-categories/${categoryId}`,
+        method: "PATCH",
+        body: { carNames },
+      }),
+      invalidatesTags: ["CarCategory"],
+    }),
     // Get Car Stats
     getCarStats: builder.query({
       query: () => ({
@@ -279,6 +327,11 @@ export const adminApi = createApi({
 });
 
 export const {
+  useAssignVendorToBookingMutation,
+  useRejectBookingMutation,
+  useGetAbookingQuery,
+  useGetDashboardStatsQuery,
+  useAddCarToCategoryMutation,
   useGetBookingStatsQuery,
   useGetRentalPackagesQuery,
   useDeleteRentalPackageMutation,

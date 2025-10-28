@@ -17,15 +17,6 @@ import {
 
 export const description = "A line chart";
 
-const chartData = [
-  { month: "May", revenue: 186 },
-  { month: "June", revenue: 305 },
-  { month: "July", revenue: 237 },
-  { month: "August", revenue: 73 },
-  { month: "September", revenue: 209 },
-  { month: "October", revenue: 214 },
-];
-
 const chartConfig = {
   revenue: {
     label: "Revenue",
@@ -33,7 +24,7 @@ const chartConfig = {
   },
 };
 
-export function ChartLineDefault() {
+export function ChartLineDefault({ data }) {
   return (
     <Card>
       <CardHeader>
@@ -44,7 +35,7 @@ export function ChartLineDefault() {
         <ChartContainer config={chartConfig}>
           <LineChart
             accessibilityLayer
-            data={chartData}
+            data={data}
             margin={{
               left: 12,
               right: 12,

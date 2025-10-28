@@ -42,7 +42,7 @@ const AdminLayout = () => {
             <ModeToggle />
           </div>
         </header>
-        <div className="p-4 lg:min-w-[calc(100vw-16rem)]">
+        <div className="p-4">
           <Outlet />
         </div>
       </SidebarInset>

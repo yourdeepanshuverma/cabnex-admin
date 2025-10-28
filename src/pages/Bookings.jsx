@@ -50,7 +50,12 @@ const Bookings = () => {
       accessorKey: "bookingId",
       header: "Booking ID",
       cell: ({ row }) => (
-        <div className="font-medium">{row.getValue("bookingId")}</div>
+        <Link
+          to={`/bookings/${row.getValue("bookingId")}`}
+          className="font-medium"
+        >
+          {row.getValue("bookingId")}
+        </Link>
       ),
     },
     {
@@ -58,8 +63,11 @@ const Bookings = () => {
       header: "User Name",
       cell: ({ row }) => (
         <div className="capitalize">
-          {row.original.userId.fullName}{" "}
-          <span>{row.original.userId.mobile}</span>
+          {row.original.userId.fullName}(
+          <Link to={`tel:${row.original.userId.mobile}`}>
+            {row.original.userId.mobile}
+          </Link>
+          )
         </div>
       ),
     },
@@ -131,9 +139,9 @@ const Bookings = () => {
                 Copy ID
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              {/* <Link to={`/city/${row.original._id}`}> */}
-              <DropdownMenuItem>View Booking</DropdownMenuItem>
-              {/* </Link> */}
+              <Link to={`/bookings/${row.original.bookingId}`}>
+                <DropdownMenuItem>View Booking</DropdownMenuItem>
+              </Link>
             </DropdownMenuContent>
           </DropdownMenu>
         );

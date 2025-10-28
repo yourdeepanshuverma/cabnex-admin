@@ -11,6 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import transformImage from "@/lib/transform-image";
 import {
   useAddCarCategoryMutation,
   useGetCarCategoriesQuery,
@@ -33,6 +34,9 @@ const CarCategories = () => {
 
     if (data.image instanceof File) {
       formData.append("image", data.image);
+    }
+    if (data.icon instanceof File) {
+      formData.append("icon", data.icon);
     }
 
     if (update) {
@@ -88,13 +92,35 @@ const CarCategories = () => {
       ),
     },
     {
+      accessorKey: "icon",
+      header: "Icon",
+      cell: ({ row }) => (
+        <Dialog>
+          <DialogTrigger asChild>
+            <img
+              src={transformImage(row.original.icon?.url) || null}
+              alt={row.original.category}
+              className="size-10 cursor-pointer rounded-md border object-cover transition hover:scale-105"
+            />
+          </DialogTrigger>
+          <DialogContent className="max-w-fit border-none bg-white p-0 shadow-none">
+            <img
+              src={row.original.icon?.url}
+              alt={row.original.category}
+              className="max-h-[80vh] rounded-lg object-contain"
+            />
+          </DialogContent>
+        </Dialog>
+      ),
+    },
+    {
       accessorKey: "image",
       header: "Image",
       cell: ({ row }) => (
         <Dialog>
           <DialogTrigger asChild>
             <img
-              src={row.original.image?.url}
+              src={transformImage(row.original.image?.url) || null}
               alt={row.original.category}
               className="size-10 cursor-pointer rounded-md border object-cover transition hover:scale-105"
             />

@@ -18,15 +18,6 @@ import {
 
 export const description = "A multiple bar chart";
 
-const chartData = [
-  { month: "May", vendors: 186, cars: 280 },
-  { month: "June", vendors: 180, cars: 200 },
-  { month: "July", vendors: 37, cars: 120 },
-  { month: "August", vendors: 173, cars: 190 },
-  { month: "September", vendors: 109, cars: 130 },
-  { month: "October", vendors: 114, cars: 140 },
-];
-
 const chartConfig = {
   vendors: {
     label: "Vendors",
@@ -38,7 +29,7 @@ const chartConfig = {
   },
 };
 
-export function ChartBarMultiple() {
+export function ChartBarMultiple({ data }) {
   return (
     <Card>
       <CardHeader>
@@ -47,7 +38,7 @@ export function ChartBarMultiple() {
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig}>
-          <BarChart accessibilityLayer data={chartData}>
+          <BarChart accessibilityLayer data={data}>
             <CartesianGrid vertical={false} />
             <XAxis
               dataKey="month"

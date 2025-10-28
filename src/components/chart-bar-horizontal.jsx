@@ -17,15 +17,6 @@ import {
 
 export const description = "A horizontal bar chart";
 
-const chartData = [
-  { month: "January", leads: 186 },
-  { month: "February", leads: 305 },
-  { month: "March", leads: 237 },
-  { month: "April", leads: 73 },
-  { month: "May", leads: 209 },
-  { month: "June", leads: 214 },
-];
-
 const chartConfig = {
   leads: {
     label: "Leads",
@@ -33,7 +24,7 @@ const chartConfig = {
   },
 };
 
-export function ChartBarHorizontal() {
+export function ChartBarHorizontal(data) {
   return (
     <Card>
       <CardHeader>
@@ -44,7 +35,7 @@ export function ChartBarHorizontal() {
         <ChartContainer config={chartConfig}>
           <BarChart
             accessibilityLayer
-            data={chartData}
+            data={data}
             layout="vertical"
             margin={{
               left: -20,

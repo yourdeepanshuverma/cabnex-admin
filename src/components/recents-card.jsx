@@ -3,10 +3,15 @@ import { Link } from "react-router";
 export default function RecentsCard({
   title,
   columns,
-  data,
+  data = [],
   actionLabel = "View All",
   onAction,
 }) {
+  const handleRowClick = (id) => {
+    if (data.length > 0) {
+      window.location.href = `/bookings/${id}`;
+    }
+  };
   return (
     <div className="border-border overflow-hidden rounded-xl border bg-white">
       <div className="border-border bg-chart-5/10 flex items-center justify-between border-b p-6">
@@ -35,20 +40,26 @@ export default function RecentsCard({
             </tr>
           </thead>
           <tbody className="divide-border divide-y">
-            {data.map((row, index) => (
-              <tr key={index} className="hover:bg-muted/20 transition-colors">
-                {columns.map((column) => (
-                  <td
-                    key={column.key}
-                    className="text-foreground px-6 py-4 text-xs tabular-nums"
-                  >
-                    {column.key
-                      .split(".")
-                      .reduce((acc, part) => acc && acc[part], row) || "-"}
-                  </td>
-                ))}
-              </tr>
-            ))}
+            {(data.length !== 0 ? data : Array(5).fill(0))?.map(
+              (row, index) => (
+                <tr
+                  onClick={() => handleRowClick(row._id)}
+                  key={index}
+                  className="hover:bg-muted/20 transition-colors"
+                >
+                  {columns.map((column) => (
+                    <td
+                      key={column.key}
+                      className="text-foreground px-6 py-4 text-xs tabular-nums"
+                    >
+                      {column.key
+                        .split(".")
+                        .reduce((acc, part) => acc && acc[part], row) || "-"}
+                    </td>
+                  ))}
+                </tr>
+              ),
+            )}
           </tbody>
         </table>
       </div>

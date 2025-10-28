@@ -12,98 +12,85 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useGetDashboardStatsQuery } from "@/store/services/adminApi";
 
 const Dashboard = () => {
-  const data = {
-    allTotals: [
-      {
-        title: "Total Bookings",
-        stats: "25",
-        bgColor: "bg-blue-200",
-      },
-      {
-        title: "Active Trips",
-        stats: "15",
-        bgColor: "bg-cyan-200",
-      },
-      {
-        title: "Upcoming Trips",
-        stats: "10",
-        bgColor: "bg-red-200",
-      },
-      {
-        title: "Completed Trips",
-        stats: "195",
-        bgColor: "bg-green-200",
-      },
-    ],
+  const uiColor = ["bg-blue-200", "bg-cyan-200", "bg-red-200", "bg-green-200"];
 
-    recentUsers: [
-      {
-        id: 1,
-        name: "Alice Johnson",
-        handle: "@alicej",
-        avatar: "https://i.pravatar.cc/150?img=1",
-      },
-      {
-        id: 2,
-        name: "Bob Smith",
-        handle: "@bobsmith",
-        avatar: "https://i.pravatar.cc/150?img=2",
-      },
-      {
-        id: 3,
-        name: "Charlie Brown",
-        handle: "@charlieb",
-        avatar: "https://i.pravatar.cc/150?img=3",
-      },
-      {
-        id: 4,
-        name: "Diana Prince",
-        handle: "@dianap",
-        avatar: "https://i.pravatar.cc/150?img=4",
-      },
-      {
-        id: 5,
-        name: "Ethan Hunt",
-        handle: "@ethanh",
-        avatar: "https://i.pravatar.cc/150?img=5",
-      },
-    ],
+  //   recentUsers: [
+  //     {
+  //       id: 1,
+  //       name: "Alice Johnson",
+  //       handle: "@alicej",
+  //       avatar: "https://i.pravatar.cc/150?img=1",
+  //     },
+  //     {
+  //       id: 2,
+  //       name: "Bob Smith",
+  //       handle: "@bobsmith",
+  //       avatar: "https://i.pravatar.cc/150?img=2",
+  //     },
+  //     {
+  //       id: 3,
+  //       name: "Charlie Brown",
+  //       handle: "@charlieb",
+  //       avatar: "https://i.pravatar.cc/150?img=3",
+  //     },
+  //     {
+  //       id: 4,
+  //       name: "Diana Prince",
+  //       handle: "@dianap",
+  //       avatar: "https://i.pravatar.cc/150?img=4",
+  //     },
+  //     {
+  //       id: 5,
+  //       name: "Ethan Hunt",
+  //       handle: "@ethanh",
+  //       avatar: "https://i.pravatar.cc/150?img=5",
+  //     },
+  //   ],
 
-    recentVendor: [
-      {
-        id: 1,
-        name: "Alice Johnson",
-        handle: "@alicej",
-        avatar: "https://i.pravatar.cc/150?img=1",
-      },
-      {
-        id: 2,
-        name: "Bob Smith",
-        handle: "@bobsmith",
-        avatar: "https://i.pravatar.cc/150?img=2",
-      },
-      {
-        id: 3,
-        name: "Charlie Brown",
-        handle: "@charlieb",
-        avatar: "https://i.pravatar.cc/150?img=3",
-      },
-      {
-        id: 4,
-        name: "Diana Prince",
-        handle: "@dianap",
-        avatar: "https://i.pravatar.cc/150?img=4",
-      },
-      {
-        id: 5,
-        name: "Ethan Hunt",
-        handle: "@ethanh",
-        avatar: "https://i.pravatar.cc/150?img=5",
-      },
-    ],
-  };
+  //   recentVendor: [
+  //     {
+  //       id: 1,
+  //       name: "Alice Johnson",
+  //       handle: "@alicej",
+  //       avatar: "https://i.pravatar.cc/150?img=1",
+  //     },
+  //     {
+  //       id: 2,
+  //       name: "Bob Smith",
+  //       handle: "@bobsmith",
+  //       avatar: "https://i.pravatar.cc/150?img=2",
+  //     },
+  //     {
+  //       id: 3,
+  //       name: "Charlie Brown",
+  //       handle: "@charlieb",
+  //       avatar: "https://i.pravatar.cc/150?img=3",
+  //     },
+  //     {
+  //       id: 4,
+  //       name: "Diana Prince",
+  //       handle: "@dianap",
+  //       avatar: "https://i.pravatar.cc/150?img=4",
+  //     },
+  //     {
+  //       id: 5,
+  //       name: "Ethan Hunt",
+  //       handle: "@ethanh",
+  //       avatar: "https://i.pravatar.cc/150?img=5",
+  //     },
+  //   ],
+  // };
+
+  const { data: dashboardStats } = useGetDashboardStatsQuery(null, {
+    selectFromResult: ({ data }) => ({
+      data: data?.data,
+    }),
+  });
+
+  console.log(dashboardStats);
 
   const bookingsData = [
     {
@@ -366,26 +353,28 @@ const Dashboard = () => {
   ];
 
   const bookingColumns = [
-    { key: "_id", label: "Booking ID" },
-    { key: "user.fullName", label: "User Name" },
-    { key: "carCategory.name", label: "Car Category" },
+    { key: "bookingId", label: "Booking ID" },
+    { key: "userName", label: "User Name" },
+    { key: "carCategory", label: "Car Category" },
     { key: "serviceType", label: "Service Type" },
     { key: "totalDays", label: "Total Days" },
     { key: "totalAmount", label: "Total Amount" },
     { key: "status", label: "Status" },
   ];
 
-  const formattedBookingsData = bookingsData.map((booking, index) => ({
-    ...booking,
-    status: (
-      <Badge
-        key={index}
-        className={`${booking.color} text-accent-foreground font-medium`}
-      >
-        {booking.status}
-      </Badge>
-    ),
-  }));
+  const formattedBookingsData = dashboardStats?.inProgressTable?.map(
+    (booking, index) => ({
+      ...booking,
+      status: (
+        <Badge
+          key={index}
+          className={`${booking.status === "completed" ? "bg-green-100" : booking.status === "inProgress" ? "bg-yellow-100" : booking.status === "pending" ? "bg-yellow-100" : "bg-red-100"} text-accent-foreground font-medium`}
+        >
+          {booking.status}
+        </Badge>
+      ),
+    }),
+  );
 
   return (
     <div className="grid grid-cols-12">
@@ -393,10 +382,10 @@ const Dashboard = () => {
         <div className="@container/main flex flex-1 flex-col gap-2">
           <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
             <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-2 gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs lg:px-6 @md/main:grid-cols-2 @2xl/main:grid-cols-4">
-              {data.allTotals.map(
-                ({ title, icon: Icon, stats, bgColor }, index) => (
+              {dashboardStats?.bookings?.map(
+                ({ title, icon: Icon, stats }, index) => (
                   <Card
-                    className={`@container/card ${bgColor} dark:bg-sidebar`}
+                    className={`@container/card ${uiColor[index]} dark:bg-sidebar`}
                     key={index}
                   >
                     <CardHeader>
@@ -416,29 +405,24 @@ const Dashboard = () => {
         <div className="grid gap-4 px-4 lg:grid-cols-6 lg:gap-6 lg:px-6">
           <div className="col-span-6 xl:col-span-4">
             <RecentsCard
-              title="Ongoing Bookings"
+              title="In Progress Bookings"
               columns={bookingColumns}
               data={formattedBookingsData}
             />
           </div>
           <div className="col-span-6 flex flex-col gap-4 xl:col-span-2">
-            <ChartLineDefault />
+            <ChartLineDefault data={dashboardStats?.charts?.revenueChartData} />
             <ChartBarHorizontal />
           </div>
-          {/* <RecentsCard
-              users={data.recentVendor}
-              title="Recent Vendors"
-              desc="Recent vendors joined this week"
-              redirectLink="/vendors"
-            /> */}
         </div>
       </div>
       <div className="col-span-12 flex flex-col gap-4 lg:col-span-3">
-        <ChartPieLabel />
-        <ChartBarMultiple />
+        {/* Booking Charts */}
+        <ChartPieLabel data={dashboardStats?.charts?.bookingChartData} />
+        <ChartBarMultiple data={dashboardStats?.charts?.vendorCarChartData} />
       </div>
       <div className="col-span-12 mt-4 lg:mt-6">
-        <PillTableSection />
+        <PillTableSection data={dashboardStats?.pendingBookingsTable} />
       </div>
     </div>
   );

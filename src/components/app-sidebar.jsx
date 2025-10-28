@@ -1,4 +1,5 @@
 import { GalleryVerticalEnd, LogOutIcon, Settings2Icon } from "lucide-react";
+import logo from "../assets/logo.png";
 
 import { SearchForm } from "@/components/search-form";
 import {
@@ -35,7 +36,7 @@ export function AppSidebar({ ...props }) {
           <SidebarMenuItem className="flex items-center gap-2 p-4">
             <img
               className="h-10 w-10 rounded-md object-cover"
-              src="src/assets/logo.png"
+              src={logo}
               alt="logo"
             />
             <Link to="/" className="text-2xl font-bold text-white">

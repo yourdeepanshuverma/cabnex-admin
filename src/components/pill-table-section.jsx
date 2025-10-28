@@ -1,83 +1,44 @@
-import React, { useState } from "react";
+import { useRejectBookingMutation } from "@/store/services/adminApi";
+import { useState } from "react";
 import { Link } from "react-router";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "./ui/alert-dialog";
 
-export default function PillTableSection() {
-  const pills = ["Rental", "City taxi", "Transfer", "Outstation", "Activity"];
+export default function PillTableSection({ data }) {
+  const pills = ["Rental", "Transfer", "Outstation", "Activity"];
 
   const types = {
     one: "One Way",
-    two: "Round Trip",
+    two: "Round",
     multi: "Multi City",
   };
 
   const [activePill, setActivePill] = useState("rental");
   const [activeType, setActiveType] = useState("one");
 
-  // Example table data
-  const data = [
-    {
-      _id: 1,
-      name: "Anita Sharma",
-      trip: "rental",
-      status: "Pending",
-    },
-    {
-      _id: 2,
-      name: "Rohit Verma",
-      trip: "rental",
-      status: "Pending",
-    },
-    {
-      _id: 3,
-      name: "Sunita Rao",
-      trip: "rental",
-      status: "Paused",
-    },
-    {
-      _id: 4,
-      name: "Aman Singh",
-      trip: "rental",
-      status: "Pending",
-    },
-    {
-      _id: 5,
-      name: "Priya Kapoor",
-      trip: "outstation",
-      type: "two",
-      status: "Pending",
-    },
-    {
-      _id: 6,
-      name: "Priya Kapoor",
-      trip: "activity",
-      status: "Pending",
-    },
-    {
-      _id: 7,
-      name: "Karan Patel",
-      trip: "outstation",
-      type: "one",
-      status: "Pending",
-    },
-    {
-      _id: 8,
-      name: "Neha Gupta",
-      trip: "transfer",
-      status: "Pending",
-    },
-    {
-      _id: 9,
-      name: "Vikram Das",
-      trip: "city taxi",
-      status: "Pending",
-    },
-  ];
+  const filtered = data?.filter(
+    (d) => d.serviceType === activePill.toLowerCase(),
+  );
 
-  const filtered = data.filter((d) => d.trip === activePill.toLowerCase());
-
-  const typeFiltered = filtered.filter((d) =>
+  const typeFiltered = filtered?.filter((d) =>
     activePill === "Outstation" ? d.type === activeType : true,
   );
+
+  const [rejectBooking, { isLoading: isRejectLoading }] =
+    useRejectBookingMutation();
+
+  const handleReject = async (bookingId) => {
+    await rejectBooking(bookingId);
+  };
 
   return (
     <section className="bg-card mx-auto w-full rounded-xl p-4">
@@ -148,10 +109,13 @@ export default function PillTableSection() {
               <thead className="bg-chart-1">
                 <tr>
                   <th className="px-4 py-2 text-left text-sm font-medium">
+                    Booking ID
+                  </th>
+                  <th className="px-4 py-2 text-left text-sm font-medium">
                     Name
                   </th>
                   <th className="px-4 py-2 text-left text-sm font-medium">
-                    Trip
+                    Service Type
                   </th>
                   {activePill === "Outstation" && (
                     <th className="px-4 py-2 text-left text-sm font-medium">
@@ -167,11 +131,12 @@ export default function PillTableSection() {
                 </tr>
               </thead>
               <tbody className="bg-background divide-y">
-                {(activePill === "Outstation" ? typeFiltered : filtered).map(
+                {(activePill === "Outstation" ? typeFiltered : filtered)?.map(
                   (row) => (
-                    <tr key={row._id} className="hover:bg-muted/40">
-                      <td className="px-4 py-3 text-sm">{row.name}</td>
-                      <td className="px-4 py-3 text-sm">{row.trip}</td>
+                    <tr key={row.bookingId} className="hover:bg-muted/40">
+                      <td className="px-4 py-3 text-sm">{row.bookingId}</td>
+                      <td className="px-4 py-3 text-sm">{row.userName}</td>
+                      <td className="px-4 py-3 text-sm">{row.serviceType}</td>
                       {activePill === "Outstation" && (
                         <td className="px-4 py-3 text-sm">{types[row.type]}</td>
                       )}
@@ -189,20 +154,47 @@ export default function PillTableSection() {
                       </td>
                       <td className="px-4 py-3 text-right text-sm">
                         <Link
-                          to={`/bookings/${row._id}`}
+                          to={`/bookings/${row.bookingId}`}
                           className="cursor-pointer rounded-md bg-green-500 px-3 py-1 text-sm font-medium text-white hover:bg-green-500/80"
                         >
                           View
                         </Link>
-                        <button className="text-destructive hover:bg-muted ml-2 cursor-pointer rounded-md px-3 py-1 text-sm font-medium">
-                          Reject
-                        </button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <button
+                              disabled={isRejectLoading}
+                              className="text-destructive hover:bg-muted ml-2 cursor-pointer rounded-md px-3 py-1 text-sm font-medium"
+                            >
+                              Reject
+                            </button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>
+                                Are you absolutely sure?
+                              </AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This action cannot be undone. This will
+                                permanently delete your account and remove your
+                                data from our servers.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => handleReject(row.bookingId)}
+                              >
+                                Continue
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </td>
                     </tr>
                   ),
                 )}
                 {(activePill === "Outstation" ? typeFiltered : filtered)
-                  .length === 0 && (
+                  ?.length === 0 && (
                   <tr>
                     <td
                       colSpan={5}

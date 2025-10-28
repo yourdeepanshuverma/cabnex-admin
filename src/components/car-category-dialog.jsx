@@ -20,26 +20,32 @@ const CarCategoryDialog = ({ title, children, data, onSave, className }) => {
     category: "",
     carNames: [],
     image: null,
+    icon: null,
   });
 
-  const [preview, setPreview] = useState(data?.image.url || "");
+  const [preview, setPreview] = useState(data?.image?.url || "");
+  const [previewIcon, setPreviewIcon] = useState(data?.icon?.url || "");
 
   useEffect(() => {
     if (data) {
       setForm({
-        category: data.category || "",
-        carNames: data.carNames || [],
-        image: null, // reset, because file input cannot be pre-filled
+        category: data?.category || "",
+        carNames: data?.carNames || [],
+        image: null,
+        icon: null,
       });
-      setPreview(data.image?.url || "");
+      setPreview(data?.image?.url || "");
+      setPreviewIcon(data?.icon?.url || "");
     } else {
       // reset for add mode
       setForm({
         category: "",
         carNames: [],
         image: null,
+        icon: null,
       });
       setPreview("");
+      setPreviewIcon("");
     }
   }, [data]);
 
@@ -78,8 +84,29 @@ const CarCategoryDialog = ({ title, children, data, onSave, className }) => {
     const file = e.target.files[0];
     if (!file) return;
     // Update form state with the selected file
-    setForm({ ...form, image: e.target.files[0] });
-    setPreview(URL.createObjectURL(e.target.files[0]));
+    setForm({ ...form, [e.target.name]: e.target.files[0] });
+    if (e.target.name === "image") {
+      setPreview(URL.createObjectURL(e.target.files[0]));
+    } else if (e.target.name === "icon") {
+      setPreviewIcon(URL.createObjectURL(e.target.files[0]));
+    }
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    if (data) {
+      form.id = data._id;
+      onSave(form, true);
+    } else onSave(form);
+
+    setForm({
+      category: "",
+      carNames: [],
+      image: null,
+    });
+    setPreview("");
+    setPreviewIcon("");
   };
 
   return (
@@ -92,23 +119,7 @@ const CarCategoryDialog = ({ title, children, data, onSave, className }) => {
           </DialogTitle>
           <DialogDescription></DialogDescription>
         </DialogHeader>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-
-            if (data) {
-              form.id = data._id;
-              onSave(form, true);
-            } else onSave(form);
-
-            setForm({
-              category: "",
-              carNames: [],
-              image: null,
-            });
-            setPreview("");
-          }}
-        >
+        <form onSubmit={handleSubmit}>
           <div className="col-span-2 grid h-fit grid-cols-2 gap-4 lg:col-span-1">
             <div className="col-span-2 space-y-2">
               <Label htmlFor="category">Category</Label>
@@ -144,6 +155,25 @@ const CarCategoryDialog = ({ title, children, data, onSave, className }) => {
                     </Badge>
                   ))}
               </div>
+            </div>
+            <div className="col-span-2 space-y-2">
+              <Label htmlFor="icon">Icon</Label>
+              <Input
+                required={!data}
+                name="icon"
+                id="icon"
+                type="file"
+                accept="image/*"
+                className="cursor-pointer"
+                onChange={handleImageChange}
+              />
+              {previewIcon && (
+                <img
+                  src={previewIcon}
+                  alt="Icon Preview"
+                  className="mt-2 h-auto w-full object-cover"
+                />
+              )}
             </div>
             <div className="col-span-2 space-y-2">
               <Label htmlFor="image">Image</Label>

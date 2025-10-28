@@ -56,6 +56,7 @@ export default function CityView() {
     extraHourCharge: "",
     driverAllowance: "",
     nightCharge: "",
+    permitCharge: "",
     hillCharge: "",
     taxSlab: "",
   });
@@ -109,6 +110,7 @@ export default function CityView() {
           extraHourCharge: "",
           driverAllowance: "",
           nightCharge: "",
+          permitCharge: "",
           hillCharge: "",
           taxSlab: "",
         });
@@ -174,29 +176,31 @@ export default function CityView() {
       <Separator />
 
       {/* Existing Categories */}
-      <div className="overflow-hidden rounded-md border">
-        <Table>
+      <div className="w-full overflow-x-auto rounded-md border">
+        <Table className="min-w-max">
           <TableHeader className="bg-orange-500/10">
             <TableRow>
               <TableHead className="w-[60px]">Image</TableHead>
               <TableHead>Category</TableHead>
               <TableHead>Base Fare</TableHead>
+              <TableHead>Market Fare</TableHead>
               <TableHead>Per(km) Charge</TableHead>
               <TableHead>Per(hrs) Charge</TableHead>
               <TableHead>Free(km)/day</TableHead>
               <TableHead>Free(hrs)/day</TableHead>
-              <TableHead>Market Fare</TableHead>
               <TableHead>Extra Km</TableHead>
               <TableHead>Extra Hour</TableHead>
               <TableHead>Driver</TableHead>
               <TableHead>Night Charge</TableHead>
+              <TableHead>Permit Charge</TableHead>
+              <TableHead>Hill Charge</TableHead>
               <TableHead>Tax Slab</TableHead>
               <TableHead className="text-right">Actions</TableHead>
               <TableHead className="text-center">Visibility</TableHead>
             </TableRow>
           </TableHeader>
 
-          <TableBody>
+          <TableBody className="w-full">
             {city?.category?.map((cat) => (
               <TableRow key={cat._id}>
                 <TableCell>
@@ -230,6 +234,8 @@ export default function CityView() {
                 <TableCell>{cat.extraHourCharge}</TableCell>
                 <TableCell>{cat.driverAllowance}</TableCell>
                 <TableCell>{cat.nightCharge}</TableCell>
+                <TableCell>{cat.permitCharge}</TableCell>
+                <TableCell>{cat.hillCharge}</TableCell>
                 <TableCell>{cat.taxSlab}%</TableCell>
                 <TableCell className="text-right">
                   <Dialog>
