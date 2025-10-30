@@ -1,17 +1,73 @@
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import Back from "@/components/ui/back";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { useGetAbookingQuery } from "@/store/services/adminApi";
+import {
+  useGetAbookingQuery,
+  useLazyGetAllVendorsQuery,
+  useRejectBookingMutation,
+} from "@/store/services/adminApi";
 import moment from "moment";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useParams } from "react-router";
 
 export default function BookingDetails({ data }) {
   const { id } = useParams();
+  const [searchVendor, setSearchVendor] = useState("");
+
   const { data: bookingData } = useGetAbookingQuery(id, {
     selectFromResult: ({ data }) => ({
       data: data?.data,
     }),
   });
+
+  const [rejectBooking, { isLoading: isRejectLoading }] =
+    useRejectBookingMutation();
+
+  const [refetchVendorData, { data: vendorsData }] =
+    useLazyGetAllVendorsQuery();
+
+  const handleReject = async () => {
+    await rejectBooking(id);
+  };
+
+  const onChangeSearchVendor = (e) => {
+    setSearchVendor(e.target.value);
+  };
+
+  useEffect(() => {
+    const timeOutId = setTimeout(() => {
+      refetchVendorData({
+        search: searchVendor,
+        resultPerPage: 5,
+      });
+    }, 1000);
+
+    return () => {
+      clearInterval(timeOutId);
+    };
+  }, [searchVendor]);
 
   if (!bookingData) {
     return (
@@ -42,6 +98,68 @@ export default function BookingDetails({ data }) {
   return (
     <div>
       <Back />
+      {status === "pending" && (
+        <div className="flex justify-end space-x-2">
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button className="bg-chart-5 hover:bg-chart-3">
+                Assign Vendor
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Find Vendor</DialogTitle>
+                <DialogDescription>
+                  <Input
+                    onChange={onChangeSearchVendor}
+                    placeholder="filter by name company, email, etc."
+                  />
+                </DialogDescription>
+              </DialogHeader>
+              {vendorsData && (
+                <div className="max-h-60 space-y-2 overflow-y-auto">
+                  {vendorsData.data.data.length > 0 ? (
+                    vendorsData.data.data.map((vendor) => (
+                      <div key={vendor.id} className="p-2 hover:bg-gray-100">
+                        {vendor.name}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="p-2 text-gray-500">No vendors found.</div>
+                  )}
+                </div>
+              )}
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button variant="outline">Cancel</Button>
+                </DialogClose>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="ghost" className="text-red-500">
+                Reject Vendor
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently reject the
+                  booking.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={() => handleReject(row.bookingId)}>
+                  Continue
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+      )}
       <div className="mx-auto rounded-lg bg-white p-6 shadow">
         <h1 className="mb-6 text-2xl font-bold">Booking Details</h1>
 

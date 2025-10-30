@@ -175,8 +175,7 @@ export default function PillTableSection({ data }) {
                               </AlertDialogTitle>
                               <AlertDialogDescription>
                                 This action cannot be undone. This will
-                                permanently delete your account and remove your
-                                data from our servers.
+                                permanently reject the booking.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
