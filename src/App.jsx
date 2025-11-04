@@ -20,6 +20,9 @@ const City = lazy(() => import("./pages/City"));
 const CityView = lazy(() => import("./pages/CityView"));
 const RentalPackages = lazy(() => import("./pages/RentalPackages"));
 const BookingDetails = lazy(() => import("./pages/BookingDetails"));
+const Transfer = lazy(() => import("./pages/Transfer"));
+const TransferView = lazy(() => import("./pages/TransferView"));
+const WebsiteSetting = lazy(() => import("./pages/WebsiteSetting"));
 
 const App = () => {
   return (
@@ -46,6 +49,9 @@ const App = () => {
         <Route path="/bookings" element={<Bookings />} />
         <Route path="/bookings/:id" element={<BookingDetails />} />
         <Route path="/rental-packages" element={<RentalPackages />} />
+        <Route path="/transfers" element={<Transfer />} />
+        <Route path="/transfers/:id" element={<TransferView />} />
+        <Route path="/settings" element={<WebsiteSetting />} />
       </Route>
       <Route
         path="/login"

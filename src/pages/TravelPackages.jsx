@@ -97,7 +97,14 @@ const TravelPackages = () => {
       header: () => {
         return <div>Description</div>;
       },
-      cell: ({ row }) => <div>{row.getValue("description")}</div>,
+      cell: ({ row }) => (
+        <div
+          className="max-w-[250px] truncate"
+          title={row.getValue("description")}
+        >
+          {row.getValue("description")}
+        </div>
+      ),
     },
     {
       accessorKey: "place",

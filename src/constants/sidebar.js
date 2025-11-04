@@ -23,6 +23,11 @@ const sidebarLinks = [
     href: "/city",
     icon: CarTaxiFrontIcon,
   },
+  {
+    title: "Transfers",
+    href: "/transfers",
+    icon: CarTaxiFrontIcon,
+  },
   { title: "Bookings", href: "/bookings", icon: TicketIcon },
   {
     title: "Travel Packages",

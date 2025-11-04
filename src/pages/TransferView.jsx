@@ -1,33 +1,6 @@
-import { useState, useEffect, use } from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import Back from "@/components/ui/back";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import {
-  useAddNewCategoryToCityMutation,
-  useGetCarCategoriesQuery,
-  useGetCitiesQuery,
-  useToggleCategoryStatusFromCityMutation,
-  useUpdateCategoryFromCityMutation,
-} from "@/store/services/adminApi";
-import { useParams } from "react-router";
-import { toast } from "sonner";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogClose,
@@ -38,34 +11,55 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import Back from "@/components/ui/back";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  useAddNewCategoryToTransferMutation,
+  useGetAllTransfersQuery,
+  useGetCarCategoriesQuery,
+  useGetCitiesQuery,
+  useToggleCategoryStatusFromTransferMutation,
+  useUpdateCategoryFromTransferMutation,
+} from "@/store/services/adminApi";
+import { useState } from "react";
+import { useParams } from "react-router";
+import { toast } from "sonner";
 
-export default function CityView() {
+export default function TransferView() {
   const { id } = useParams();
 
   const [newCategory, setNewCategory] = useState("");
   const [fareDetails, setFareDetails] = useState({
     baseFare: "",
-    marketFare: "",
-    perKmCharge: "",
-    perHourCharge: "",
-    freeKmPerDay: "",
-    freeHoursPerDay: "",
+    baseKm: "",
     extraKmCharge: "",
-    extraHourCharge: "",
-    driverAllowance: "",
-    nightCharge: "",
-    permitCharge: "",
     hillCharge: "",
     taxSlab: "",
   });
 
-  const { data: city } = useGetCitiesQuery(undefined, {
+  const { data: transfer } = useGetAllTransfersQuery(undefined, {
     selectFromResult: ({ data }) => ({
-      data: data?.data?.cities?.find((i) => i._id === id),
+      data: data?.data?.find((i) => i._id === id),
     }),
   });
+
   const { data: categories } = useGetCarCategoriesQuery(undefined, {
     selectFromResult: ({ data }) => ({
       data: data?.data?.categories
@@ -73,18 +67,22 @@ export default function CityView() {
           _id: i._id,
           category: i.category,
         }))
-        .filter((i) => !city?.category?.some((cat) => cat.type._id === i._id)),
+        .filter(
+          (i) => !transfer?.category?.some((cat) => cat.type._id === i._id),
+        ),
     }),
   });
 
-  const [addNewCategoryToCity, { isLoading: addNewCategoryLoading }] =
-    useAddNewCategoryToCityMutation();
+  const [addNewCategoryToTransfer, { isLoading: addNewCategoryLoading }] =
+    useAddNewCategoryToTransferMutation();
 
-  const [updateCategoryFromCity, { isLoading: updateCategoryLoading }] =
-    useUpdateCategoryFromCityMutation();
+  const [updateCategoryFromTransfer, { isLoading: updateCategoryLoading }] =
+    useUpdateCategoryFromTransferMutation();
 
-  const [toggleCategoryStatusFromCity, { isLoading: toggleCategoryLoading }] =
-    useToggleCategoryStatusFromCityMutation();
+  const [
+    toggleCategoryStatusFromTransfer,
+    { isLoading: toggleCategoryLoading },
+  ] = useToggleCategoryStatusFromTransferMutation();
 
   const handleAddCategory = () => {
     if (!newCategory) return toast.error("Please select a category");
@@ -94,23 +92,16 @@ export default function CityView() {
       ...fareDetails,
     };
 
-    addNewCategoryToCity({ cityId: city._id, category: categoryData })
+    addNewCategoryToTransfer({ transferId: id, category: categoryData })
       .unwrap()
-      .then(() => {
+      .then((data) => {
+        toast.success(data?.data?.message || "Category added successfully");
         // Reset form
         setNewCategory("");
         setFareDetails({
           baseFare: "",
-          marketFare: "",
-          perKmCharge: "",
-          perHourCharge: "",
-          freeKmPerDay: "",
-          freeHoursPerDay: "",
+          baseKm: "",
           extraKmCharge: "",
-          extraHourCharge: "",
-          driverAllowance: "",
-          nightCharge: "",
-          permitCharge: "",
           hillCharge: "",
           taxSlab: "",
         });
@@ -134,8 +125,8 @@ export default function CityView() {
       data[key] = Number(data[key]);
     });
 
-    updateCategoryFromCity({
-      cityId: city._id,
+    updateCategoryFromTransfer({
+      transferId: id,
       categoryId,
       category: data,
     })
@@ -149,7 +140,7 @@ export default function CityView() {
   };
 
   const handleToggleCategoryVisibility = (categoryId) => () => {
-    toggleCategoryStatusFromCity({ cityId: city._id, categoryId })
+    toggleCategoryStatusFromTransfer({ transferId: id, categoryId })
       .unwrap()
       .then(({ data }) => {
         toast.success(data?.message || "Category status updated");
@@ -167,9 +158,11 @@ export default function CityView() {
 
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-semibold capitalize">{city?.city}</h1>
+        <h1 className="text-2xl font-semibold capitalize">{transfer?.name}</h1>
         <p className="text-muted-foreground capitalize">
-          {city?.state.split("-").join(" ")}
+          {transfer?.city.split("-").join(" ")}
+          {", "}
+          {transfer?.state.split("-").join(" ")}
         </p>
       </div>
 
@@ -183,16 +176,8 @@ export default function CityView() {
               <TableHead className="w-[60px]">Image</TableHead>
               <TableHead>Category</TableHead>
               <TableHead>Base Fare</TableHead>
-              <TableHead>Market Fare</TableHead>
-              <TableHead>Per(km) Charge</TableHead>
-              <TableHead>Per(hrs) Charge</TableHead>
-              <TableHead>Free(km)/day</TableHead>
-              <TableHead>Free(hrs)/day</TableHead>
-              <TableHead>Extra Km</TableHead>
-              <TableHead>Extra Hour</TableHead>
-              <TableHead>Driver</TableHead>
-              <TableHead>Night Charge</TableHead>
-              <TableHead>Permit Charge</TableHead>
+              <TableHead>Base Km</TableHead>
+              <TableHead>Extra Km Charge</TableHead>
               <TableHead>Hill Charge</TableHead>
               <TableHead>Tax Slab</TableHead>
               <TableHead className="text-right">Actions</TableHead>
@@ -201,8 +186,8 @@ export default function CityView() {
           </TableHeader>
 
           <TableBody className="w-full">
-            {city?.category.length > 0 ? (
-              city.category.map((cat) => (
+            {transfer?.category.length > 0 ? (
+              transfer.category.map((cat) => (
                 <TableRow key={cat._id}>
                   <TableCell>
                     <Dialog>
@@ -226,16 +211,8 @@ export default function CityView() {
                     {cat.type.category}
                   </TableCell>
                   <TableCell>{cat.baseFare}</TableCell>
-                  <TableCell>{cat.marketFare}</TableCell>
-                  <TableCell>{cat.perKmCharge}</TableCell>
-                  <TableCell>{cat.perHourCharge}</TableCell>
-                  <TableCell>{cat.freeKmPerDay}</TableCell>
-                  <TableCell>{cat.freeHoursPerDay}</TableCell>
+                  <TableCell>{cat.baseKm}</TableCell>
                   <TableCell>{cat.extraKmCharge}</TableCell>
-                  <TableCell>{cat.extraHourCharge}</TableCell>
-                  <TableCell>{cat.driverAllowance}</TableCell>
-                  <TableCell>{cat.nightCharge}</TableCell>
-                  <TableCell>{cat.permitCharge}</TableCell>
                   <TableCell>{cat.hillCharge}</TableCell>
                   <TableCell>{cat.taxSlab}%</TableCell>
                   <TableCell className="text-right">

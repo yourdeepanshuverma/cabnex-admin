@@ -23,7 +23,9 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
+import Spinner from "@/components/ui/spinner";
 import {
+  useAssignVendorToBookingMutation,
   useGetAbookingQuery,
   useLazyGetAllVendorsQuery,
   useRejectBookingMutation,
@@ -42,11 +44,18 @@ export default function BookingDetails({ data }) {
     }),
   });
 
+  const [assignVendorToBooking, { isLoading: isAssignLoading }] =
+    useAssignVendorToBookingMutation();
+
   const [rejectBooking, { isLoading: isRejectLoading }] =
     useRejectBookingMutation();
 
   const [refetchVendorData, { data: vendorsData }] =
     useLazyGetAllVendorsQuery();
+
+  const handleAssignVendor = async (vendorId) => {
+    await assignVendorToBooking({ bookingId: id, vendorId });
+  };
 
   const handleReject = async () => {
     await rejectBooking(id);
@@ -108,20 +117,45 @@ export default function BookingDetails({ data }) {
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
               <DialogHeader>
-                <DialogTitle>Find Vendor</DialogTitle>
+                <DialogTitle className="mb-2 text-center">
+                  Assign Vendor
+                </DialogTitle>
                 <DialogDescription>
                   <Input
                     onChange={onChangeSearchVendor}
-                    placeholder="filter by name company, email, etc."
+                    placeholder="Filter by company, email, etc."
                   />
                 </DialogDescription>
               </DialogHeader>
               {vendorsData && (
-                <div className="max-h-60 space-y-2 overflow-y-auto">
-                  {vendorsData.data.data.length > 0 ? (
+                <div className="max-h-80 space-y-2 overflow-y-auto">
+                  {vendorsData?.data?.data?.length > 0 ? (
                     vendorsData.data.data.map((vendor) => (
-                      <div key={vendor.id} className="p-2 hover:bg-gray-100">
-                        {vendor.name}
+                      <div
+                        key={vendor._id}
+                        className="flex items-center gap-2 rounded-2xl border-1 border-black/20 bg-gray-100 p-4"
+                      >
+                        <img
+                          src={
+                            vendor.profile ||
+                            "https://cdn-icons-png.flaticon.com/128/16893/16893425.png"
+                          }
+                          className="size-10 h-10 w-10 rounded-full object-cover"
+                          alt={vendor.company}
+                        />
+                        <div className="flex flex-col">
+                          <h4 className="truncate text-xl font-bold capitalize">
+                            {vendor.company}
+                          </h4>
+                          <p className="text-sm">{vendor.email}</p>
+                        </div>
+                        <Button
+                          disabled={isAssignLoading}
+                          onClick={() => handleAssignVendor(vendor._id)}
+                          className="ml-auto cursor-pointer bg-blue-500 hover:bg-blue-400"
+                        >
+                          Assign
+                        </Button>
                       </div>
                     ))
                   ) : (
@@ -152,8 +186,15 @@ export default function BookingDetails({ data }) {
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={() => handleReject(row.bookingId)}>
-                  Continue
+                <AlertDialogAction
+                  disabled={isRejectLoading}
+                  onClick={() => handleReject(row.bookingId)}
+                >
+                  {isRejectLoading ? (
+                    <Spinner className="w-full" />
+                  ) : (
+                    "Continue"
+                  )}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>

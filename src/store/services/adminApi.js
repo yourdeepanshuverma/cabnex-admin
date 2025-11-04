@@ -20,9 +20,36 @@ export const adminApi = createApi({
     "dashboardStats",
     "UserStats",
     "VendorStats",
+    "Transfers",
   ],
 
   endpoints: (builder) => ({
+    // Website Settings
+    getWebsiteSettings: builder.query({
+      query: () => ({
+        url: "/admin/website-setting",
+      }),
+      providesTags: ["WebsiteSettings"],
+    }),
+    // Add or Update Website Settings
+    addWebsiteSettings: builder.mutation({
+      query: (data) => ({
+        url: "/admin/website-setting",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["WebsiteSettings"],
+    }),
+    // Update Website Settings
+    updateWebsiteSettings: builder.mutation({
+      query: (data) => ({
+        url: "/admin/website-setting",
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["WebsiteSettings"],
+    }),
+
     // Check Admin Authentication
     checkAdmin: builder.query({
       query: () => ({
@@ -132,12 +159,12 @@ export const adminApi = createApi({
       query: (id) => ({
         url: `/admin/bookings/${id}`,
       }),
+      providesTags: ["Booking"],
     }),
     assignVendorToBooking: builder.mutation({
       query: ({ bookingId, vendorId }) => ({
-        url: `/admin/bookings/${bookingId}/assign-vendor`,
+        url: `/admin/bookings/${bookingId}/assign-vendor/${vendorId}`,
         method: "POST",
-        body: { vendorId },
       }),
       invalidatesTags: ["Bookings"],
     }),
@@ -323,10 +350,60 @@ export const adminApi = createApi({
       }),
       invalidatesTags: ["RentalPackage"],
     }),
+
+    getAllTransfers: builder.query({
+      query: () => ({
+        url: "/admin/transfers",
+      }),
+      providesTags: ["Transfers"],
+    }),
+    // Add Transfer
+    addTransfer: builder.mutation({
+      query: (data) => ({
+        url: "/admin/transfers",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["Transfers"],
+    }),
+    // Add New Category to Transfer
+    addNewCategoryToTransfer: builder.mutation({
+      query: ({ transferId, category }) => ({
+        url: `/admin/transfers/${transferId}`,
+        method: "PUT",
+        body: category,
+      }),
+      invalidatesTags: ["Transfers"],
+    }),
+    // Update Category from Transfer
+    updateCategoryFromTransfer: builder.mutation({
+      query: ({ transferId, categoryId, category }) => ({
+        url: `/admin/transfers/${transferId}/category/${categoryId}`,
+        method: "PUT",
+        body: category,
+      }),
+      invalidatesTags: ["Transfers"],
+    }),
+    // Toggle Category Status from Existing Transfer
+    toggleCategoryStatusFromTransfer: builder.mutation({
+      query: ({ transferId, categoryId }) => ({
+        url: `/admin/transfers/${transferId}/category/${categoryId}`,
+        method: "PATCH",
+      }),
+      invalidatesTags: ["Transfers"],
+    }),
   }),
 });
 
 export const {
+  useGetWebsiteSettingsQuery,
+  useAddWebsiteSettingsMutation,
+  useUpdateWebsiteSettingsMutation,
+  useAddNewCategoryToTransferMutation,
+  useUpdateCategoryFromTransferMutation,
+  useGetAllTransfersQuery,
+  useAddTransferMutation,
+  useToggleCategoryStatusFromTransferMutation,
   useAssignVendorToBookingMutation,
   useRejectBookingMutation,
   useGetAbookingQuery,

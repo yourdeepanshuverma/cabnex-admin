@@ -29,10 +29,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import Spinner from "@/components/ui/spinner";
+import { Switch } from "@/components/ui/switch";
+import { Table, TableHead, TableHeader } from "@/components/ui/table";
 import {
-  useAddNewCityMutation,
+  useAddTransferMutation,
+  useGetAllTransfersQuery,
   useGetCarCategoriesQuery,
-  useGetCitiesQuery,
 } from "@/store/services/adminApi";
 import { Autocomplete, LoadScript } from "@react-google-maps/api";
 import { MoreHorizontalIcon, PlusIcon } from "lucide-react";
@@ -42,8 +44,8 @@ import { toast } from "sonner";
 
 const libraries = ["places"];
 
-const City = () => {
-  const { data, isLoading: loading } = useGetCitiesQuery();
+const Transfer = () => {
+  const { data, isLoading: loading } = useGetAllTransfersQuery();
 
   const columns = [
     {
@@ -67,6 +69,18 @@ const City = () => {
       ),
       enableSorting: false,
       enableHiding: false,
+    },
+    {
+      accessorKey: "name",
+      header: "Name",
+      cell: ({ row }) => (
+        <Link
+          to={`/transfers/${row.original._id}`}
+          className="font-medium capitalize hover:underline"
+        >
+          {row.getValue("name").split("-").join(" ")}
+        </Link>
+      ),
     },
     {
       accessorKey: "city",
@@ -115,10 +129,10 @@ const City = () => {
                 Copy ID
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <Link to={`/city/${row.original._id}`}>
-                <DropdownMenuItem>View City</DropdownMenuItem>
+              <Link to={`/transfers/${row.original._id}`}>
+                <DropdownMenuItem>View Details</DropdownMenuItem>
               </Link>
-              <Dialog>
+              {/* <Dialog>
                 <DialogTrigger asChild>
                   <button className="m-0 px-1 py-2 text-sm">
                     Duplicate City
@@ -130,7 +144,7 @@ const City = () => {
                     <DialogDescription></DialogDescription>
                   </DialogHeader>
                 </DialogContent>
-              </Dialog>
+              </Dialog> */}
             </DropdownMenuContent>
           </DropdownMenu>
         );
@@ -146,26 +160,28 @@ const City = () => {
     <div className="flex flex-1 flex-col">
       <div className="bg-chart-1 mb-4 flex items-center justify-between space-y-2 rounded-md px-4 py-2">
         <h4 className="mb-0 scroll-m-20 text-left text-2xl font-bold text-balance">
-          Add City
+          Add Transfers
         </h4>
-        <AddCityDialog />
+        <AddTransferDialog />
       </div>
-      <AutopaginateTable columns={columns} data={data?.data?.cities || []} />
+      <AutopaginateTable columns={columns} data={data?.data || []} />
     </div>
   );
 };
 
-const AddCityDialog = () => {
+const AddTransferDialog = () => {
   const autocompleteRef = useRef(null);
-  const [city, setCity] = useState({
+  const [form, setForm] = useState({
     name: "",
     place_id: "",
+    type: "",
+    city: "",
     state: "",
   });
   const [open, setOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("");
 
-  const [addNewCity] = useAddNewCityMutation();
+  const [addNewTransfer, { isLoading }] = useAddTransferMutation();
 
   const { data: categories } = useGetCarCategoriesQuery(undefined, {
     selectFromResult: ({ data }) => ({
@@ -178,42 +194,28 @@ const AddCityDialog = () => {
 
   const handleSave = async (e) => {
     e.preventDefault();
-    if (!selectedCategory) return toast("Please select a category");
-
-    const form = e.target;
-    const formData = new FormData(form);
+    const f = e.target;
+    const formData = new FormData(f);
     const data = Object.fromEntries(formData.entries());
 
-    await addNewCity({
-      city: city.name,
-      place_id: city.place_id,
-      state: city.state,
+    await addNewTransfer({
+      ...form,
       category: [
         {
           type: selectedCategory,
-          baseFare: data.baseFare,
-          perKmCharge: data.perKmCharge,
-          perHourCharge: data.perHourCharge,
-          marketFare: data.marketFare,
-          freeKmPerDay: data.freeKmPerDay,
-          freeHoursPerDay: data.freeHoursPerDay,
-          extraKmCharge: data.extraKmCharge,
-          extraHourCharge: data.extraHourCharge,
-          driverAllowance: data.driverAllowance,
-          nightCharge: data.nightCharge,
-          permitCharge: data.permitCharge,
-          hillCharge: data.hillCharge,
-          taxSlab: data.taxSlab,
+          baseFare: Number(data.baseFare),
+          baseKm: Number(data.baseKm),
+          extrakmCharge: Number(data.extrakmCharge),
+          hillCharge: Number(data.hillCharge),
+          taxSlab: Number(data.taxSlab),
         },
       ],
     })
       .unwrap()
       .then((data) => {
         toast.success(data.message);
-        toast.success("Add more categories from city view");
-        form.reset();
-        setSelectedCategory("");
-        setCity({ name: "", place_id: "", state: "" });
+        f.reset();
+        setForm({ name: "", place_id: "", state: "", city: "", type: "" });
         setOpen(false);
       })
       .catch((err) => {
@@ -226,27 +228,40 @@ const AddCityDialog = () => {
 
     if (!place?.address_components) return;
 
-    // Extract the city name only
-    const cityComponent =
-      place.address_components.find((comp) =>
-        comp.types.includes("locality"),
-      ) ||
+    const isAirport =
+      place.types?.includes("airport") || /airport/i.test(place.name);
+
+    const type = isAirport
+      ? "airport"
+      : place.types?.includes("train_station")
+        ? "train_station"
+        : place.types?.includes("bus_station")
+          ? "bus_station"
+          : place.types?.includes("subway_station")
+            ? "subway_station"
+            : place.types?.includes("transit_station")
+              ? "transit_station"
+              : "other";
+
+    const cityName =
+      place.address_components.find((comp) => comp.types.includes("locality"))
+        ?.long_name ||
       place.address_components.find((comp) =>
         comp.types.includes("administrative_area_level_2"),
-      ) ||
+      )?.long_name ||
       place.address_components.find((comp) =>
         comp.types.includes("administrative_area_level_1"),
-      );
-
-    const cityName = cityComponent ? cityComponent.long_name : place.name;
+      )?.long_name;
 
     const stateName = place.address_components.find((comp) =>
       comp.types.includes("administrative_area_level_1"),
-    ).long_name;
+    )?.long_name;
 
-    setCity({
-      name: cityName,
+    setForm({
+      name: place.name,
       place_id: place.place_id,
+      type: type,
+      city: cityName,
       state: stateName,
     });
   };
@@ -281,31 +296,28 @@ const AddCityDialog = () => {
                     onPlaceChanged={handlePlaceChanged}
                     options={{
                       componentRestrictions: { country: "IN" },
-                      types: ["(cities)"],
+                      types: ["transit_station"],
                     }}
                   >
                     <input
                       type="text"
                       placeholder="Search for a location"
                       className="w-full rounded-md border p-3"
-                      id="city"
-                      name="city"
                       required
                     />
                   </Autocomplete>
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="state">State</Label>
-                <Input
-                  id="state"
-                  name="state"
-                  placeholder="Enter state name"
-                  disabled
-                  value={city.state}
-                />
+              <div className="grid grid-cols-2 gap-4 space-y-2">
+                <div>
+                  <Label>City</Label>
+                  <Input disabled value={form.city} />
+                </div>
+                <div>
+                  <Label>State</Label>
+                  <Input disabled value={form.state} />
+                </div>
               </div>
-              {/* Category fields */}
               <div className="space-y-2">
                 <Label>Select Category</Label>
                 <Select
@@ -329,16 +341,8 @@ const AddCityDialog = () => {
               <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
                 {[
                   "baseFare",
-                  "marketFare",
-                  "perKmCharge",
-                  "perHourCharge",
-                  "freeKmPerDay",
-                  "freeHoursPerDay",
+                  "baseKm",
                   "extraKmCharge",
-                  "extraHourCharge",
-                  "driverAllowance",
-                  "nightCharge",
-                  "permitCharge",
                   "hillCharge",
                   "taxSlab",
                 ].map((key) => (
@@ -359,9 +363,13 @@ const AddCityDialog = () => {
             </div>
             <DialogFooter>
               <DialogClose asChild>
-                <Button variant="outline">Cancel</Button>
+                <Button variant="outline" disabled={isLoading}>
+                  Cancel
+                </Button>
               </DialogClose>
-              <Button type="submit">Save</Button>
+              <Button type="submit" disabled={isLoading}>
+                {isLoading ? <Spinner /> : "Save"}
+              </Button>
             </DialogFooter>
           </form>
         </DialogContent>
@@ -370,4 +378,4 @@ const AddCityDialog = () => {
   );
 };
 
-export default City;
+export default Transfer;

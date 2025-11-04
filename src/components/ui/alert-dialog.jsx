@@ -92,9 +92,10 @@ function AlertDialogDescription({ className, ...props }) {
   );
 }
 
-function AlertDialogAction({ className, ...props }) {
+function AlertDialogAction({ className, disabled, ...props }) {
   return (
     <AlertDialogPrimitive.Action
+      disabled={disabled}
       className={cn(buttonVariants(), className)}
       {...props}
     />
