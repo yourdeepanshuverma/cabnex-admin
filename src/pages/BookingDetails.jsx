@@ -50,8 +50,9 @@ export default function BookingDetails({ data }) {
   const [rejectBooking, { isLoading: isRejectLoading }] =
     useRejectBookingMutation();
 
-  const [refetchVendorData, { data: vendorsData }] =
-    useLazyGetAllVendorsQuery();
+  const [refetchVendorData, { data: vendorsData }] = useLazyGetAllVendorsQuery({
+    status: "approved",
+  });
 
   const handleAssignVendor = async (vendorId) => {
     await assignVendorToBooking({ bookingId: id, vendorId });
@@ -70,6 +71,7 @@ export default function BookingDetails({ data }) {
       refetchVendorData({
         search: searchVendor,
         resultPerPage: 5,
+        status: "approved",
       });
     }, 1000);
 
@@ -90,7 +92,6 @@ export default function BookingDetails({ data }) {
     bookingId,
     serviceType,
     carCategory,
-    packageType,
     exactLocation,
     pickupDateTime,
     returnDateTime,
@@ -102,6 +103,7 @@ export default function BookingDetails({ data }) {
     distance,
     createdAt,
     userId,
+    assignedVendor,
   } = bookingData;
 
   return (
@@ -115,7 +117,7 @@ export default function BookingDetails({ data }) {
                 Assign Vendor
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-2xl">
               <DialogHeader>
                 <DialogTitle className="mb-2 text-center">
                   Assign Vendor
@@ -144,10 +146,18 @@ export default function BookingDetails({ data }) {
                           alt={vendor.company}
                         />
                         <div className="flex flex-col">
-                          <h4 className="truncate text-xl font-bold capitalize">
+                          <h4
+                            title={vendor.company}
+                            className="line-clamp-1 w-full text-lg font-semibold capitalize"
+                          >
                             {vendor.company}
                           </h4>
-                          <p className="text-sm">{vendor.email}</p>
+                          <p
+                            title={vendor.email}
+                            className="line-clamp-1 w-full text-sm text-gray-600"
+                          >
+                            {vendor.email}
+                          </p>
                         </div>
                         <Button
                           disabled={isAssignLoading}
@@ -211,6 +221,12 @@ export default function BookingDetails({ data }) {
             <p className="font-semibold">{bookingId}</p>
           </div>
           <div>
+            <p className="text-sm text-gray-500">Booking Date</p>
+            <p className="font-semibold">
+              {moment(createdAt).format("MMMM Do YYYY, h:mm a") || "—"}
+            </p>
+          </div>
+          <div className="space-y-2">
             <p className="text-sm text-gray-500">Status</p>
             <span
               className={`rounded-full px-3 py-1 text-sm font-medium ${
@@ -231,16 +247,6 @@ export default function BookingDetails({ data }) {
           <div>
             <p className="text-sm text-gray-500">Car Category</p>
             <p className="font-semibold capitalize">{carCategory || "—"}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Package Type</p>
-            <p className="font-semibold">{packageType || "—"}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Booking Date</p>
-            <p className="font-semibold">
-              {moment(createdAt).format("MMMM Do YYYY, h:mm a") || "—"}
-            </p>
           </div>
         </div>
 
@@ -345,6 +351,45 @@ export default function BookingDetails({ data }) {
             </div>
           </div>
         </div>
+
+        {assignedVendor && (
+          <>
+            <Separator className="my-6" />
+
+            {/* 🧍 Vendor Info */}
+            <div>
+              <h2 className="mb-2 text-lg font-semibold">
+                Assigned Vendor
+                <Link
+                  to={`/vendors/profile/${assignedVendor?._id}`}
+                  className="ml-2 text-sm text-blue-600 underline"
+                >
+                  View Profile
+                </Link>
+              </h2>
+              <div className="grid grid-cols-2 gap-4 rounded-lg border bg-gray-50 p-4 md:grid-cols-3">
+                <div>
+                  <p className="text-sm text-gray-500">Full Name</p>
+                  <p className="font-semibold">
+                    {assignedVendor?.company || "—"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Email</p>
+                  <p className="font-semibold">
+                    {assignedVendor?.email || "—"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Phone</p>
+                  <p className="font-semibold">
+                    {assignedVendor?.contactPhone || "—"}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

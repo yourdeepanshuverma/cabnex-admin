@@ -2,7 +2,6 @@ import {
   CarTaxiFrontIcon,
   IdCardIcon,
   LayoutDashboardIcon,
-  SettingsIcon,
   TentTreeIcon,
   TicketIcon,
   User2Icon,
@@ -37,6 +36,11 @@ const sidebarLinks = [
   {
     title: "Rental Packages",
     href: "/rental-packages",
+    icon: TentTreeIcon,
+  },
+  {
+    title: "Activity Packages",
+    href: "/activity-packages",
     icon: TentTreeIcon,
   },
 ];

@@ -117,6 +117,7 @@ export default function PillTableSection({ data }) {
                   <th className="px-4 py-2 text-left text-sm font-medium">
                     Service Type
                   </th>
+
                   {activePill === "Outstation" && (
                     <th className="px-4 py-2 text-left text-sm font-medium">
                       Type
@@ -134,7 +135,14 @@ export default function PillTableSection({ data }) {
                 {(activePill === "Outstation" ? typeFiltered : filtered)?.map(
                   (row) => (
                     <tr key={row.bookingId} className="hover:bg-muted/40">
-                      <td className="px-4 py-3 text-sm">{row.bookingId}</td>
+                      <td className="px-4 py-3 text-sm">
+                        <Link
+                          to={`/bookings/${row.bookingId}`}
+                          className="text-primary hover:underline"
+                        >
+                          {row.bookingId}
+                        </Link>
+                      </td>
                       <td className="px-4 py-3 text-sm">{row.userName}</td>
                       <td className="px-4 py-3 text-sm">{row.serviceType}</td>
                       {activePill === "Outstation" && (

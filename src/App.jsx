@@ -23,6 +23,10 @@ const BookingDetails = lazy(() => import("./pages/BookingDetails"));
 const Transfer = lazy(() => import("./pages/Transfer"));
 const TransferView = lazy(() => import("./pages/TransferView"));
 const WebsiteSetting = lazy(() => import("./pages/WebsiteSetting"));
+const ActivityPackages = lazy(() => import("./pages/ActivityPackages"));
+const ActivityPackageDetails = lazy(
+  () => import("./pages/ActivityPackageDetails"),
+);
 
 const App = () => {
   return (
@@ -51,6 +55,11 @@ const App = () => {
         <Route path="/rental-packages" element={<RentalPackages />} />
         <Route path="/transfers" element={<Transfer />} />
         <Route path="/transfers/:id" element={<TransferView />} />
+        <Route path="/activity-packages" element={<ActivityPackages />} />
+        <Route
+          path="/activity-packages/:id"
+          element={<ActivityPackageDetails />}
+        />
         <Route path="/settings" element={<WebsiteSetting />} />
       </Route>
       <Route

@@ -47,16 +47,30 @@ export default function RecentsCard({
                   key={index}
                   className="hover:bg-muted/20 transition-colors"
                 >
-                  {columns.map((column) => (
-                    <td
-                      key={column.key}
-                      className="text-foreground px-6 py-4 text-xs tabular-nums"
-                    >
-                      {column.key
+                  {columns.map((column) => {
+                    const cellValue =
+                      column.key
                         .split(".")
-                        .reduce((acc, part) => acc && acc[part], row) || "-"}
-                    </td>
-                  ))}
+                        .reduce((acc, part) => acc && acc[part], row) ?? "-";
+
+                    return (
+                      <td
+                        key={column.key}
+                        className="text-foreground px-6 py-4 text-xs tabular-nums"
+                      >
+                        {column.key === "bookingId" && cellValue !== "-" ? (
+                          <Link
+                            to={`/bookings/${cellValue}`}
+                            className="cursor-pointer text-xs font-bold text-blue-500! hover:underline"
+                          >
+                            {cellValue}
+                          </Link>
+                        ) : (
+                          cellValue
+                        )}
+                      </td>
+                    );
+                  })}
                 </tr>
               ),
             )}

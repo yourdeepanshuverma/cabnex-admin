@@ -17,7 +17,10 @@ export const adminApi = createApi({
     "Cars",
     "Car",
     "Bookings",
+    "Booking",
+    "WebsiteSettings",
     "dashboardStats",
+    "City-Names",
     "UserStats",
     "VendorStats",
     "Transfers",
@@ -111,12 +114,13 @@ export const adminApi = createApi({
     }),
     // Get All Vendors
     getAllVendors: builder.query({
-      query: ({ search = "", page = 1, resultPerPage = 10 }) => ({
+      query: ({ search = "", page = 1, resultPerPage = 10, status = "" }) => ({
         url: "/admin/vendors",
         params: {
           search,
           page,
           resultPerPage,
+          status,
         },
       }),
       providesTags: ["Vendors"],
@@ -155,18 +159,20 @@ export const adminApi = createApi({
       }),
       providesTags: ["Bookings"],
     }),
+    // Get A Booking
     getAbooking: builder.query({
       query: (id) => ({
         url: `/admin/bookings/${id}`,
       }),
       providesTags: ["Booking"],
     }),
+    // Assign Vendor to Booking
     assignVendorToBooking: builder.mutation({
       query: ({ bookingId, vendorId }) => ({
         url: `/admin/bookings/${bookingId}/assign-vendor/${vendorId}`,
         method: "POST",
       }),
-      invalidatesTags: ["Bookings"],
+      invalidatesTags: ["Bookings", "Booking"],
     }),
     rejectBooking: builder.mutation({
       query: (bookingId) => ({
@@ -207,6 +213,12 @@ export const adminApi = createApi({
         method: "DELETE",
       }),
       invalidatesTags: ["TravelPackage"],
+    }),
+    getCityNames: builder.query({
+      query: () => ({
+        url: "/admin/cities-names",
+      }),
+      providesTags: ["City-Names"],
     }),
     // Get Cities
     getCities: builder.query({
@@ -350,7 +362,6 @@ export const adminApi = createApi({
       }),
       invalidatesTags: ["RentalPackage"],
     }),
-
     getAllTransfers: builder.query({
       query: () => ({
         url: "/admin/transfers",
@@ -392,10 +403,29 @@ export const adminApi = createApi({
       }),
       invalidatesTags: ["Transfers"],
     }),
+    // Get Activity Packages
+    getActivityPackages: builder.query({
+      query: () => ({
+        url: "/package/activity",
+      }),
+      providesTags: ["ActivityPackage"],
+    }),
+    // Add Activity Package
+    addActivityPackage: builder.mutation({
+      query: (data) => ({
+        url: "/package/activity",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["ActivityPackage"],
+    }),
   }),
 });
 
 export const {
+  useGetCityNamesQuery,
+  useGetActivityPackagesQuery,
+  useAddActivityPackageMutation,
   useGetWebsiteSettingsQuery,
   useAddWebsiteSettingsMutation,
   useUpdateWebsiteSettingsMutation,
