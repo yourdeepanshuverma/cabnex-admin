@@ -42,11 +42,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import Spinner from "@/components/ui/spinner";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import {
   useAddActivityPackageMutation,
+  useDeleteActivityPackageMutation,
   useGetActivityPackagesQuery,
   useGetCityNamesQuery,
+  useToggleActivityPackageStatusMutation,
+  useUpdateActivityPackageMutation,
 } from "@/store/services/adminApi";
 import { MoreHorizontalIcon, PlusIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
@@ -56,21 +61,14 @@ import { toast } from "sonner";
 const ActivityPackages = () => {
   const { data } = useGetActivityPackagesQuery();
 
-  const [addActivityPackage] = useAddActivityPackageMutation();
-  // const [updateActivityPackage] = useUpdateActivityPackageMutation();
-  // const [deleteActivityPackage] = useDeleteActivityPackageMutation();
-
-  const handleEdit = async (e, id) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-
-    await updateActivityPackage({ id, data: Object.fromEntries(formData) })
-      .unwrap()
-      .then((data) => toast.success(data.message))
-      .catch((err) =>
-        toast.error(err.data?.message || "Failed to update package"),
-      );
-  };
+  const [addActivityPackage, { isLoading: addActivityLoading }] =
+    useAddActivityPackageMutation();
+  const [updateActivityPackage, { isLoading: updateActivityLoading }] =
+    useUpdateActivityPackageMutation();
+  const [deleteActivityPackage, { isLoading: deleteActivityLoading }] =
+    useDeleteActivityPackageMutation();
+  const [toggleActivityPackageStatus, { isLoading: toggleActivityLoading }] =
+    useToggleActivityPackageStatusMutation();
 
   const handleDelete = async (id) => {
     await deleteActivityPackage(id)
@@ -81,48 +79,14 @@ const ActivityPackages = () => {
       );
   };
 
-  // 🔹 Submit form
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const data = new FormData();
-
-    data.append("cityId", formData.cityId);
-    data.append("title", formData.title);
-    data.append("description", formData.description);
-    data.append("duration", formData.duration);
-    data.append("price", formData.price);
-    data.append("cancellationPolicy", formData.cancellationPolicy);
-    data.append("startLocation", JSON.stringify(formData.startLocation));
-    data.append("pricingOptions", JSON.stringify(formData.pricingOptions));
-    data.append("itinerary", JSON.stringify(formData.itinerary));
-    data.append("includes", JSON.stringify(formData.includes));
-    data.append("excludes", JSON.stringify(formData.excludes));
-
-    images.forEach((file) => data.append("images", file));
-
-    await addActivityPackage(data)
+  const handleToggleActivityPackageStatus = (id) => {
+    toggleActivityPackageStatus(id)
       .unwrap()
-      .then(({ data }) => {
-        toast.success(data.message || "Package created successfully");
-        setFormData({
-          cityId: "",
-          title: "",
-          description: "",
-          duration: "",
-          price: "",
-          cancellationPolicy: "Non-refundable",
-          startLocation: { name: "", coordinates: { lat: "", lng: "" } },
-          pricingOptions: [],
-          itinerary: [],
-          includes: [],
-          excludes: [],
-        });
-        setImages([]);
-        setImagePreviews([]);
+      .then((data) => {
+        toast.success(data.message);
       })
       .catch((err) => {
-        console.error(err);
-        toast.error(err.data?.message || "Failed to create package");
+        toast.error(err.data?.message || "Failed to update category");
       });
   };
 
@@ -178,6 +142,20 @@ const ActivityPackages = () => {
       cell: ({ row }) => <div>{row.getValue("price")}</div>,
     },
     {
+      accessorKey: "isActive",
+      header: "Visibility",
+      cell: ({ row }) => (
+        <Switch
+          checked={row.original.isActive}
+          onCheckedChange={() =>
+            handleToggleActivityPackageStatus(row.original._id)
+          }
+          disabled={toggleActivityLoading}
+          aria-readonly
+        />
+      ),
+    },
+    {
       id: "actions",
       enableHiding: false,
       cell: ({ row }) => {
@@ -207,8 +185,9 @@ const ActivityPackages = () => {
                 <ActivityDialog
                   title="Edit Activity Package"
                   description="Modify the fields below to update the activity package."
-                  handleSubmit={(e) => handleEdit(e, row.original._id)}
+                  handleSave={updateActivityPackage}
                   data={row.original}
+                  isLoading={updateActivityLoading}
                 >
                   <button className="hover:bg-muted w-full rounded-sm px-2 py-1.5 text-left text-sm">
                     Edit Package
@@ -233,6 +212,7 @@ const ActivityPackages = () => {
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
                       <AlertDialogAction
+                        disabled={deleteActivityLoading}
                         onClick={() => handleDelete(row.original._id)}
                       >
                         Continue
@@ -248,8 +228,6 @@ const ActivityPackages = () => {
     },
   ];
 
-  console.log(data?.data);
-
   return (
     <div className="flex flex-1 flex-col">
       <div className="bg-chart-1 mb-4 flex items-center justify-between space-y-2 rounded-md px-4 py-2">
@@ -259,7 +237,8 @@ const ActivityPackages = () => {
         <ActivityDialog
           title="Add Activity Package"
           description="Fill the form below to add a new activity package."
-          handleSubmit={handleSubmit}
+          handleSave={addActivityPackage}
+          isLoading={addActivityLoading}
         >
           <PlusIcon className="mr-2 inline-block h-4 w-4" />
         </ActivityDialog>
@@ -273,8 +252,10 @@ const ActivityDialog = ({
   className,
   title,
   description,
-  handleSubmit,
+  handleSave,
   data,
+  btnText = "Save",
+  isLoading,
   children,
 }) => {
   const [formData, setFormData] = useState({
@@ -333,6 +314,66 @@ const ActivityDialog = ({
       ...prev,
       [field]: prev[field].filter((_, i) => i !== index),
     }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!formData.cityId) return toast.error("Please select a city");
+
+    const Data = new FormData();
+
+    Data.append("cityId", formData.cityId);
+    Data.append("title", formData.title);
+    Data.append("description", formData.description);
+    Data.append("duration", formData.duration);
+    Data.append("price", formData.price);
+    Data.append("cancellationPolicy", formData.cancellationPolicy);
+    Data.append("pricingOptions", JSON.stringify(formData.pricingOptions));
+    Data.append("itinerary", JSON.stringify(formData.itinerary));
+    Data.append("includes", JSON.stringify(formData.includes));
+    Data.append("excludes", JSON.stringify(formData.excludes));
+
+    images.forEach((file) => Data.append("images", file));
+
+    if (!data) {
+      // create new package
+      await handleSave(Data)
+        .unwrap()
+        .then(({ data }) => {
+          toast.success(data?.message || "Package created successfully");
+          setFormData({
+            cityId: "",
+            title: "",
+            description: "",
+            duration: "",
+            price: "",
+            cancellationPolicy: "Non-refundable",
+            startLocation: { name: "", coordinates: { lat: "", lng: "" } },
+            pricingOptions: [],
+            itinerary: [],
+            includes: [],
+            excludes: [],
+          });
+          setImages([]);
+          setImagePreviews([]);
+        })
+        .catch((err) => {
+          console.error(err);
+          toast.error(err.data?.message || "Failed to create package");
+        });
+      return;
+    }
+
+    // update existing package
+    await handleSave({ id: data._id, data: Data })
+      .unwrap()
+      .then(({ data }) => {
+        toast.success(data?.message || "Package updated successfully");
+      })
+      .catch((err) => {
+        console.error(err);
+        toast.error(err.data?.message || "Failed to update package");
+      });
   };
 
   return (
@@ -625,8 +666,8 @@ const ActivityDialog = ({
             />
           </div>
 
-          <Button type="submit" className="w-full">
-            Create Activity Package
+          <Button disabled={isLoading} type="submit" className="w-full">
+            {!isLoading ? btnText : <Spinner />}
           </Button>
         </form>
       </DialogContent>

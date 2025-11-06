@@ -142,43 +142,41 @@ export default function ActivityPackageDetails() {
           )}
 
           {/* Includes / Excludes */}
-          {includes.length > 0 ||
-            (excludes.length > 0 && (
-              <div>
-                <Separator className="my-6" />
-                {includes.length > 0 && (
-                  <div>
-                    <h3 className="mb-2 text-lg font-medium">Includes</h3>
-                    <ul className="space-y-1">
-                      {includes.map((inc, i) => (
-                        <li
-                          key={i}
-                          className="flex items-center gap-2 text-green-700"
-                        >
-                          <CheckCircle2 size={16} /> {inc}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
 
-                {excludes.length > 0 && (
-                  <div>
-                    <h3 className="mb-2 text-lg font-medium">Excludes</h3>
-                    <ul className="space-y-1">
-                      {excludes.map((exc, i) => (
-                        <li
-                          key={i}
-                          className="flex items-center gap-2 text-red-700"
-                        >
-                          <XCircle size={16} /> {exc}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
+          <div>
+            <Separator className="my-6" />
+            {includes.length > 0 && (
+              <div>
+                <h3 className="mb-2 text-lg font-medium">Includes</h3>
+                <ul className="space-y-1">
+                  {includes.map((inc, i) => (
+                    <li
+                      key={i}
+                      className="flex items-center gap-2 text-green-700"
+                    >
+                      <CheckCircle2 size={16} /> {inc}
+                    </li>
+                  ))}
+                </ul>
               </div>
-            ))}
+            )}
+
+            {excludes.length > 0 && (
+              <div>
+                <h3 className="mb-2 text-lg font-medium">Excludes</h3>
+                <ul className="space-y-1">
+                  {excludes.map((exc, i) => (
+                    <li
+                      key={i}
+                      className="flex items-center gap-2 text-red-700"
+                    >
+                      <XCircle size={16} /> {exc}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
 
           {/* Cancellation Policy */}
           <div>

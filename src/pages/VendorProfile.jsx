@@ -306,13 +306,13 @@ export default function VendorProfile() {
           <div>
             <h4 className="font-medium">Total Cars</h4>
             <p className="text-muted-foreground capitalize">
-              {data?.data?.vendor?.totalCars || 0}
+              {data?.data?.vendor?.cars?.length || 0}
             </p>
           </div>
           <div>
             <h4 className="font-medium">Total Bookings</h4>
             <p className="text-muted-foreground capitalize">
-              {data?.data?.vendor?.bookings || 0}
+              {data?.data?.vendor?.bookings?.length || 0}
             </p>
           </div>
           <div>

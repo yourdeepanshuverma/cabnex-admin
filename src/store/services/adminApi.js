@@ -419,10 +419,35 @@ export const adminApi = createApi({
       }),
       invalidatesTags: ["ActivityPackage"],
     }),
+    updateActivityPackage: builder.mutation({
+      query: ({ id, data }) => ({
+        url: `/package/activity/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["ActivityPackage"],
+    }),
+    deleteActivityPackage: builder.mutation({
+      query: (id) => ({
+        url: `/package/activity/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["ActivityPackage"],
+    }),
+    toggleActivityPackageStatus: builder.mutation({
+      query: (id) => ({
+        url: `/package/activity/${id}`,
+        method: "PATCH",
+      }),
+      invalidatesTags: ["ActivityPackage"],
+    }),
   }),
 });
 
 export const {
+  useUpdateActivityPackageMutation,
+  useDeleteActivityPackageMutation,
+  useToggleActivityPackageStatusMutation,
   useGetCityNamesQuery,
   useGetActivityPackagesQuery,
   useAddActivityPackageMutation,

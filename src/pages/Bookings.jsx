@@ -52,7 +52,7 @@ const Bookings = () => {
       cell: ({ row }) => (
         <Link
           to={`/bookings/${row.getValue("bookingId")}`}
-          className="font-medium"
+          className="font-medium hover:underline"
         >
           {row.getValue("bookingId")}
         </Link>
@@ -116,6 +116,15 @@ const Bookings = () => {
           {row.original.assignedVendor
             ? row.original.assignedVendor.company
             : "N/A"}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "createdAt",
+      header: "Created At",
+      cell: ({ row }) => (
+        <div className="capitalize">
+          {moment(row.original.createdAt).format("MMMM Do YYYY, h:mm a")}
         </div>
       ),
     },

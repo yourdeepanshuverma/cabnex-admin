@@ -115,9 +115,11 @@ export default function PillTableSection({ data }) {
                     Name
                   </th>
                   <th className="px-4 py-2 text-left text-sm font-medium">
+                    City
+                  </th>
+                  <th className="px-4 py-2 text-left text-sm font-medium">
                     Service Type
                   </th>
-
                   {activePill === "Outstation" && (
                     <th className="px-4 py-2 text-left text-sm font-medium">
                       Type
@@ -144,6 +146,7 @@ export default function PillTableSection({ data }) {
                         </Link>
                       </td>
                       <td className="px-4 py-3 text-sm">{row.userName}</td>
+                      <td className="px-4 py-3 text-sm">{row.city}</td>
                       <td className="px-4 py-3 text-sm">{row.serviceType}</td>
                       {activePill === "Outstation" && (
                         <td className="px-4 py-3 text-sm">{types[row.type]}</td>
