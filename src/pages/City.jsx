@@ -137,6 +137,7 @@ const AddCityDialog = () => {
   });
   const [open, setOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [isSelecting, setIsSelecting] = useState(false);
 
   const [addNewCity] = useAddNewCityMutation();
 
@@ -222,6 +223,12 @@ const AddCityDialog = () => {
       place_id: place.place_id,
       state: stateName,
     });
+    setIsSelecting(false);
+  };
+
+  // Google dropdown starts appearing — disable closing temporarily
+  const handleFocus = () => {
+    setIsSelecting(true);
   };
 
   return (
@@ -229,7 +236,12 @@ const AddCityDialog = () => {
       googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
       libraries={libraries}
     >
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog
+        open={open}
+        onOpenChange={(v) => {
+          if (!isSelecting) setOpen(v);
+        }}
+      >
         <DialogTrigger asChild>
           <Button variant="outline">
             <PlusIcon className="h-4 w-4" />
@@ -261,6 +273,7 @@ const AddCityDialog = () => {
                       type="text"
                       placeholder="Search for a location"
                       className="w-full rounded-md border p-3"
+                      onFocus={handleFocus}
                       id="city"
                       name="city"
                       required
