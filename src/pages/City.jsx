@@ -246,8 +246,8 @@ const AddCityDialog = () => {
                 <Label htmlFor="city">City</Label>
 
                 <div
-                  onMouseDown={(e) => e.stopPropagation()} // ✅ Prevent dialog close when clicking suggestions
-                  onTouchStart={(e) => e.stopPropagation()}
+                  onPointerDownCapture={(e) => e.stopPropagation()}
+                  onTouchStartCapture={(e) => e.stopPropagation()}
                 >
                   <Autocomplete
                     onLoad={(ref) => (autocompleteRef.current = ref)}
