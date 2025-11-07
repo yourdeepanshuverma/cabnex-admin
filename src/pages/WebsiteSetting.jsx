@@ -18,22 +18,17 @@ export default function WebsiteSetting() {
     favicon: null,
     contactEmail: "",
     contactPhone: "",
-    address: "",
+    addresses: [],
     aboutUs: "",
-    socials: [
-      {
-        platform: "instagram",
-        url: "https://instagram.com/",
-      },
-    ],
-    faqs: [],
-    reviews: [],
-    profiles: [],
-    seo: {
-      title: "",
-      description: "",
-      keywords: [],
-    },
+  });
+
+  const [socials, setSocials] = useState([]);
+  const [faqs, setFaqs] = useState([]);
+  const [reviews, setReviews] = useState([]);
+  const [seo, setSeo] = useState({
+    title: "",
+    description: "",
+    keywords: [],
   });
 
   const [previewMode, setPreviewMode] = useState(false);
@@ -53,35 +48,36 @@ export default function WebsiteSetting() {
 
   const handleSEOChange = (e) => {
     const { name, value } = e.target;
-    setBasicData((prev) => ({
+    setSeo((prev) => ({
       ...prev,
-      seo: { ...prev.seo, [name]: value },
+      [name]: value,
     }));
   };
 
   // Dynamic handlers
-  const addItem = (field, item) => {
-    setBasicData((prev) => ({
+  const addItem = (setHandle, item) => {
+    setHandle((prev) => ({
       ...prev,
-      [field]: [...prev[field], item],
+      item,
     }));
   };
+  console.log(reviews);
 
-  const updateItem = (field, index, key, value) => {
+  const updateItem = (setHandle, field, index, key, value) => {
     const updated = [...basicData[field]];
     updated[index][key] = value;
-    setBasicData((prev) => ({ ...prev, [field]: updated }));
+    setHandle((prev) => ({ ...prev, [field]: updated }));
   };
 
-  const updateItemDirect = (field, index, value) => {
+  const updateItemDirect = (setHandle, field, index, value) => {
     const updated = [...basicData[field]];
     updated[index] = value;
-    setBasicData((prev) => ({ ...prev, [field]: updated }));
+    setHandle((prev) => ({ ...prev, [field]: updated }));
   };
 
-  const removeItem = (field, index) => {
+  const removeItem = (setHandle, field, index) => {
     const updated = basicData[field].filter((_, i) => i !== index);
-    setBasicData((prev) => ({ ...prev, [field]: updated }));
+    setHandle((prev) => ({ ...prev, [field]: updated }));
   };
 
   // ✅ Save to API
@@ -234,18 +230,19 @@ export default function WebsiteSetting() {
             </form>
 
             {/* SOCIALS */}
-            <div>
+            <form onSubmit={handleSubmit}>
               <Separator className="my-4" />
+
               <h3 className="mb-2 text-lg font-medium">Social Links</h3>
               <ul className="ml-5 list-disc">
-                {basicData.socials.map((s, i) => (
+                {socials?.map((s, i) => (
                   <li key={i}>
                     {s.platform}: <a href={s.url}>{s.url}</a>
                   </li>
                 ))}
               </ul>
               <form onSubmit={handleSubmit}>
-                {basicData?.socials.map((s, i) => (
+                {socials?.map((s, i) => (
                   <div key={i} className="mb-2 flex gap-2">
                     <Input
                       placeholder="Platform (e.g. Facebook)"
@@ -278,13 +275,13 @@ export default function WebsiteSetting() {
                   + Add Social Link
                 </Button>
               </form>
-            </div>
+            </form>
 
             {/* FAQ */}
-            <div>
+            <form onSubmit={handleSubmit}>
               <Separator className="my-4" />
               <h3 className="mb-2 text-lg font-medium">FAQs</h3>
-              {basicData?.faqs.map((f, i) => (
+              {faqs.map((f, i) => (
                 <div key={i} className="mb-3 space-y-2">
                   <Input
                     placeholder="Question"
@@ -316,13 +313,13 @@ export default function WebsiteSetting() {
               >
                 + Add FAQ
               </Button>
-            </div>
+            </form>
 
             {/* REVIEWS */}
-            <div>
+            <form onSubmit={handleSubmit}>
               <Separator className="my-4" />
               <h3 className="mb-2 text-lg font-medium">Reviews</h3>
-              {basicData.reviews.map((r, i) => (
+              {reviews?.map((r, i) => (
                 <div key={i} className="mb-3 space-y-2 rounded-lg border p-3">
                   <Input
                     placeholder="Name"
@@ -380,7 +377,7 @@ export default function WebsiteSetting() {
                 type="button"
                 variant="outline"
                 onClick={() =>
-                  addItem("reviews", {
+                  addItem(setReviews, {
                     name: "",
                     role: "",
                     rating: 5,
@@ -391,40 +388,37 @@ export default function WebsiteSetting() {
               >
                 + Add Review
               </Button>
-            </div>
+            </form>
 
             {/* SEO */}
-            <div>
+            <form onSubmit={handleSubmit}>
               <Separator className="my-4" />
               <h3 className="mb-2 text-lg font-medium">SEO</h3>
               <Input
                 name="title"
-                value={basicData.seo.title}
+                value={seo.title}
                 onChange={handleSEOChange}
                 placeholder="SEO Title"
               />
               <Textarea
                 name="description"
-                value={basicData.seo.description}
+                value={seo.description}
                 onChange={handleSEOChange}
                 placeholder="SEO Description"
                 className="mt-2"
               />
               <Input
                 placeholder="Keywords (comma separated)"
-                value={basicData.seo.keywords.join(", ")}
+                value={seo.keywords.join(", ")}
                 onChange={(e) =>
-                  setBasicData((prev) => ({
+                  setSeo((prev) => ({
                     ...prev,
-                    seo: {
-                      ...prev.seo,
-                      keywords: e.target.value.split(",").map((k) => k.trim()),
-                    },
+                    keywords: e.target.value.split(",").map((k) => k.trim()),
                   }))
                 }
                 className="mt-2"
               />
-            </div>
+            </form>
           </div>
         ) : (
           // ✅ PREVIEW MODE

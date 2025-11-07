@@ -144,8 +144,7 @@ const Bookings = () => {
         </div>
       </div>
       <ManualDataFetchTable
-        searchText="Search using vendors name"
-        searchBy="make"
+        searchText="Search using Booking ID"
         fetchFunc={useLazyGetAllBookingsQuery}
         columns={columns}
         status={queryParams.status}

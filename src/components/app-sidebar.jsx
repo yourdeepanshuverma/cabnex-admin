@@ -84,7 +84,7 @@ export function AppSidebar({ ...props }) {
               className="hover:bg-muted/10 rounded-lg"
             >
               <Link
-                to="/settings"
+                // to="/settings"
                 className="flex items-center gap-2 text-sm text-black md:text-white md:hover:text-white"
               >
                 <Settings2Icon className="h-4 w-4" />

@@ -30,6 +30,7 @@ import { toast } from "sonner";
 import Spinner from "./ui/spinner";
 
 export default function ManualDataFetchTable({
+  searchText,
   fetchFunc,
   status,
   columns,
@@ -119,7 +120,7 @@ export default function ManualDataFetchTable({
     <div className="w-full">
       <div className="flex items-center py-4">
         <Input
-          placeholder="Search across all fields..."
+          placeholder={searchText || "Search across all fields..."}
           value={search ?? ""}
           onChange={(e) => setSearch(e.target.value)}
           className="max-w-sm"
