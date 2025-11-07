@@ -92,28 +92,6 @@ const ActivityPackages = () => {
 
   const columns = [
     {
-      id: "select",
-      header: ({ table }) => (
-        <Checkbox
-          checked={
-            table.getIsAllPageRowsSelected() ||
-            (table.getIsSomePageRowsSelected() && "indeterminate")
-          }
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all"
-        />
-      ),
-      cell: ({ row }) => (
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
-        />
-      ),
-      enableSorting: false,
-      enableHiding: false,
-    },
-    {
       accessorKey: "title",
       header: "Title",
       cell: ({ row }) => (
@@ -126,7 +104,10 @@ const ActivityPackages = () => {
       accessorKey: "description",
       header: "Description",
       cell: ({ row }) => (
-        <div title={row.getValue("description")}>
+        <div
+          title={row.getValue("description")}
+          className="max-w-[500px] truncate"
+        >
           {row.getValue("description")}
         </div>
       ),
@@ -170,11 +151,6 @@ const ActivityPackages = () => {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                <DropdownMenuItem
-                  onClick={() => navigator.clipboard.writeText(row.original.id)}
-                >
-                  Copy ID
-                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>
                   <Link to={`/activity-packages/${row.original._id}`}>
@@ -240,7 +216,9 @@ const ActivityPackages = () => {
           handleSave={addActivityPackage}
           isLoading={addActivityLoading}
         >
-          <PlusIcon className="mr-2 inline-block h-4 w-4" />
+          <Button variant="outline">
+            <PlusIcon className="inline-block h-4 w-4" />
+          </Button>
         </ActivityDialog>
       </div>
       <AutopaginateTable data={data?.data || []} columns={columns} />
@@ -390,7 +368,12 @@ const ActivityDialog = ({
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             {/* City ID */}
             <div className="space-y-2">
-              <Label>Select City</Label>
+              <Label>
+                Select City
+                <Link title="Add More cities" to="/city" className="m-0 p-0">
+                  *
+                </Link>
+              </Label>
               <Select
                 name="cityId"
                 value={formData.cityId}

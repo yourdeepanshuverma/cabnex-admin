@@ -52,7 +52,6 @@ export const adminApi = createApi({
       }),
       invalidatesTags: ["WebsiteSettings"],
     }),
-
     // Check Admin Authentication
     checkAdmin: builder.query({
       query: () => ({
@@ -139,7 +138,7 @@ export const adminApi = createApi({
         method: "PATCH",
         body: data,
       }),
-      invalidatesTags: ["Vendor"],
+      invalidatesTags: ["Vendor", "VendorStats"],
     }),
     // Get Booking Stats
     getBookingStats: builder.query({
@@ -149,12 +148,13 @@ export const adminApi = createApi({
     }),
     // Get All Bookings
     getAllBookings: builder.query({
-      query: ({ search = "", page = 1, resultPerPage = 10 }) => ({
+      query: ({ search = "", page = 1, resultPerPage = 10, status = "" }) => ({
         url: "/admin/bookings",
         params: {
           search,
           page,
           resultPerPage,
+          status,
         },
       }),
       providesTags: ["Bookings"],
@@ -214,6 +214,7 @@ export const adminApi = createApi({
       }),
       invalidatesTags: ["TravelPackage"],
     }),
+    // Get City Names
     getCityNames: builder.query({
       query: () => ({
         url: "/admin/cities-names",

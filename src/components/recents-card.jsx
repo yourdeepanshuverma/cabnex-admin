@@ -15,7 +15,9 @@ export default function RecentsCard({
   return (
     <div className="border-border overflow-hidden rounded-xl border bg-white">
       <div className="border-border bg-chart-5/10 flex items-center justify-between border-b p-6">
-        <h2 className="text-foreground text-lg font-semibold">{title}</h2>
+        <h2 className="text-foreground text-base font-semibold md:text-lg">
+          {title}
+        </h2>
         <Link
           to="/bookings"
           onClick={onAction}

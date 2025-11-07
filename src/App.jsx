@@ -1,8 +1,9 @@
-import { Route, Routes } from "react-router";
+import { Navigate, Route, Routes } from "react-router";
 import AdminLayout from "./components/Layouts/AdminLayout";
 import Protected from "./components/protected";
 
 import { lazy } from "react";
+import { NotFound } from "./pages/NotFound";
 
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const TravelPackages = lazy(() => import("./pages/TravelPackages"));
@@ -38,7 +39,8 @@ const App = () => {
           </Protected>
         }
       >
-        <Route path="/" element={<Dashboard />} />
+        <Route index element={<Navigate to="/dashboard" replace />} />
+        <Route index path="/dashboard" element={<Dashboard />} />
         <Route path="/travel-packages" element={<TravelPackages />} />
         <Route path="/vendors" element={<Vendors />} />
         <Route path="/vendors/profile/:id" element={<VendorProfile />} />
@@ -47,8 +49,8 @@ const App = () => {
         <Route path="/cars" element={<Cars />} />
         <Route path="/city" element={<City />} />
         <Route path="/city/:id" element={<CityView />} />
-        <Route path="/cars-categories" element={<CarCategories />} />
-        <Route path="/cars-categories/:id" element={<CategoryView />} />
+        <Route path="/car-categories" element={<CarCategories />} />
+        <Route path="/car-categories/:id" element={<CategoryView />} />
         <Route path="/cars/profile/:id" element={<CarProfile />} />
         <Route path="/bookings" element={<Bookings />} />
         <Route path="/bookings/:id" element={<BookingDetails />} />
@@ -70,7 +72,7 @@ const App = () => {
           </Protected>
         }
       />
-      <Route path="*" element={<div>404 Not Found</div>} />
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 };

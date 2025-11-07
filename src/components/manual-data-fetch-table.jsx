@@ -31,6 +31,7 @@ import Spinner from "./ui/spinner";
 
 export default function ManualDataFetchTable({
   fetchFunc,
+  status,
   columns,
   deleteSelected,
 }) {
@@ -42,7 +43,9 @@ export default function ManualDataFetchTable({
     pageSize: 10,
   });
 
-  const [refetch, { data, isLoading, isFetching }] = fetchFunc();
+  const [refetch, { data, isLoading, isFetching }] = fetchFunc({
+    status,
+  });
 
   const table = useReactTable({
     data: data?.data?.data || [],
@@ -76,6 +79,7 @@ export default function ManualDataFetchTable({
         search,
         page: pagination.pageIndex + 1,
         resultPerPage: pagination.pageSize,
+        status,
       });
     }, 1000);
 
@@ -120,22 +124,6 @@ export default function ManualDataFetchTable({
           onChange={(e) => setSearch(e.target.value)}
           className="max-w-sm"
         />
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto">
-              Actions <ChevronDown />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {/* <DropdownMenuItem onClick={handleDeleteSelected}>
-              Delete Selected
-            </DropdownMenuItem>
-            <DropdownMenuSeparator /> */}
-            <DropdownMenuItem onClick={handleExport}>
-              Export Json
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
       </div>
       <div className="overflow-hidden rounded-md border">
         <Table>

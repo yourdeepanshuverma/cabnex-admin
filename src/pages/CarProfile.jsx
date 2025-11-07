@@ -241,31 +241,6 @@ export default function CarProfile() {
           </Card>
         </div>
       </div>
-
-      <Tabs defaultValue="logs">
-        <TabsList>
-          <TabsTrigger value="logs">Activity Logs</TabsTrigger>
-          <TabsTrigger value="reviews">Customer Reviews</TabsTrigger>
-        </TabsList>
-        <TabsContent value="logs">
-          <Card>
-            <CardContent>
-              <p className="text-muted-foreground text-sm">
-                Logs of updates and admin actions will show here.
-              </p>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="reviews">
-          <Card>
-            <CardContent>
-              <p className="text-muted-foreground text-sm">
-                List of customer reviews here.
-              </p>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
     </div>
   );
 }

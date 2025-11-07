@@ -39,7 +39,10 @@ export function AppSidebar({ ...props }) {
               src={logo}
               alt="logo"
             />
-            <Link to="/" className="text-2xl font-bold text-white">
+            <Link
+              to="/"
+              className="text-2xl font-bold text-black md:text-white"
+            >
               Cabnex
             </Link>
           </SidebarMenuItem>
@@ -54,12 +57,13 @@ export function AppSidebar({ ...props }) {
                   asChild
                   tooltip={title}
                   className={cn(
-                    "hover:bg-muted/10 rounded-lg hover:text-white",
-                    href === props?.pathname && "bg-muted/20 font-medium",
+                    "md:hover:bg-muted/10 md:hover:text-foreground rounded-lg",
+                    props?.pathname?.startsWith(href) &&
+                      "bg-muted-foreground/20 font-medium",
                   )}
                 >
                   <Link
-                    className="flex items-center gap-2 text-white"
+                    className="flex items-center gap-2 text-black md:text-white"
                     to={href}
                   >
                     {Icon && <Icon />}
@@ -81,7 +85,7 @@ export function AppSidebar({ ...props }) {
             >
               <Link
                 to="/settings"
-                className="flex items-center gap-2 text-sm text-white hover:text-white"
+                className="flex items-center gap-2 text-sm text-black md:text-white md:hover:text-white"
               >
                 <Settings2Icon className="h-4 w-4" />
                 Settings
@@ -91,7 +95,7 @@ export function AppSidebar({ ...props }) {
           <SidebarMenuItem>
             <SidebarMenuButton
               size="sm"
-              className="hover:bg-muted/10 rounded-lg text-white hover:text-white"
+              className="hover:bg-muted/10 rounded-lg text-black md:text-white md:hover:text-white"
               onClick={handleLogout}
             >
               <LogOutIcon className="h-4 w-4" />

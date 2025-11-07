@@ -114,9 +114,7 @@ const CarCategoryDialog = ({ title, children, data, onSave, className }) => {
       <DialogTrigger className={`${className}`}>{children}</DialogTrigger>
       <DialogContent className="my-4 max-h-[80vh] overflow-x-hidden overflow-y-auto px-2 py-4 sm:px-6 sm:py-6">
         <DialogHeader>
-          <DialogTitle className="text-left font-bold text-orange-500">
-            {title}
-          </DialogTitle>
+          <DialogTitle className="text-left font-bold">{title}</DialogTitle>
           <DialogDescription></DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
@@ -199,12 +197,7 @@ const CarCategoryDialog = ({ title, children, data, onSave, className }) => {
             <DialogClose asChild>
               <Button variant="outline">Cancel</Button>
             </DialogClose>
-            <Button
-              className="bg-orange-500 text-white hover:bg-orange-600"
-              type="submit"
-            >
-              Save
-            </Button>
+            <Button type="submit">Save</Button>
           </DialogFooter>
         </form>
       </DialogContent>

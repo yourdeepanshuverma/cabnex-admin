@@ -63,28 +63,6 @@ const CarCategories = () => {
 
   const columns = [
     {
-      id: "select",
-      header: ({ table }) => (
-        <Checkbox
-          checked={
-            table.getIsAllPageRowsSelected() ||
-            (table.getIsSomePageRowsSelected() && "indeterminate")
-          }
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all"
-        />
-      ),
-      cell: ({ row }) => (
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
-        />
-      ),
-      enableSorting: false,
-      enableHiding: false,
-    },
-    {
       accessorKey: "category",
       header: "Category",
       cell: ({ row }) => (
@@ -170,12 +148,6 @@ const CarCategories = () => {
             </DropdownMenuTrigger>
             <DropdownMenuContent className="space-y-0.5" align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem
-                onClick={() => navigator.clipboard.writeText(row.original._id)}
-              >
-                Copy ID
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
               <CarCategoryDialog
                 title="Add Package"
                 className="hover:bg-muted w-full rounded-sm px-2 py-1.5 text-left text-sm"
@@ -184,7 +156,7 @@ const CarCategories = () => {
               >
                 Edit Category
               </CarCategoryDialog>
-              <Link to={`/cars-categories/${row.original._id}`}>
+              <Link to={`/car-categories/${row.original._id}`}>
                 <DropdownMenuItem>View Category</DropdownMenuItem>
               </Link>
             </DropdownMenuContent>
@@ -205,7 +177,9 @@ const CarCategories = () => {
           className="cursor-pointer"
           onSave={handleSave}
         >
-          <PlusIcon />
+          <Button variant="outline">
+            <PlusIcon />
+          </Button>
         </CarCategoryDialog>
       </div>
       <AutopaginateTable

@@ -7,7 +7,6 @@ import {
   useLazyGetAllBookingsQuery,
 } from "@/store/services/adminApi";
 import ManualDataFetchTable from "@/components/manual-data-fetch-table";
-import { Checkbox } from "@/components/ui/checkbox";
 import moment from "moment";
 import {
   DropdownMenu,
@@ -17,35 +16,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Link } from "react-router";
+import { Link, useLocation, useParams } from "react-router";
 import { MoreHorizontalIcon } from "lucide-react";
 
 const Bookings = () => {
-  const { data: bookingsStats } = useGetBookingStatsQuery();
+  const { search } = useLocation();
+  const queryParams = Object.fromEntries(new URLSearchParams(search));
+  const { data: bookingsStats } = useGetBookingStatsQuery({});
 
   const columns = [
-    {
-      id: "select",
-      header: ({ table }) => (
-        <Checkbox
-          checked={
-            table.getIsAllPageRowsSelected() ||
-            (table.getIsSomePageRowsSelected() && "indeterminate")
-          }
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all"
-        />
-      ),
-      cell: ({ row }) => (
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
-        />
-      ),
-      enableSorting: false,
-      enableHiding: false,
-    },
     {
       accessorKey: "bookingId",
       header: "Booking ID",
@@ -142,11 +121,6 @@ const Bookings = () => {
             </DropdownMenuTrigger>
             <DropdownMenuContent className="space-y-0.5" align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem
-                onClick={() => navigator.clipboard.writeText(row.original._id)}
-              >
-                Copy ID
-              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <Link to={`/bookings/${row.original.bookingId}`}>
                 <DropdownMenuItem>View Booking</DropdownMenuItem>
@@ -162,7 +136,7 @@ const Bookings = () => {
     <div className="flex flex-1 flex-col">
       <div className="@container/main flex flex-1 flex-col gap-2">
         <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-          <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-3">
+          <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
             {bookingsStats?.data?.map((item, index) => (
               <SectionCards key={index} {...item} />
             ))}
@@ -174,6 +148,7 @@ const Bookings = () => {
         searchBy="make"
         fetchFunc={useLazyGetAllBookingsQuery}
         columns={columns}
+        status={queryParams.status}
       />
     </div>
   );

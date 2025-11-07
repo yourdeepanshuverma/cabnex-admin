@@ -1,5 +1,5 @@
 import { useCheckAdminQuery } from "@/store/services/adminApi";
-import { useEffect } from "react";
+import { use, useEffect } from "react";
 import { useNavigate } from "react-router";
 import Spinner from "./ui/spinner";
 
@@ -15,7 +15,7 @@ export default function Protected({ children, authentication = true }) {
       if (authentication && isError) {
         navigate("/login");
       } else if (!authentication && !isError) {
-        navigate("/");
+        navigate("/dashboard");
       }
     }
   }, [isLoading, isError, authentication, navigate]);

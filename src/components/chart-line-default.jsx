@@ -24,9 +24,9 @@ const chartConfig = {
   },
 };
 
-export function ChartLineDefault({ data }) {
+export function ChartLineDefault({ data, className }) {
   return (
-    <Card>
+    <Card className={className}>
       <CardHeader>
         <CardTitle>Revenue Analytics</CardTitle>
         <CardDescription>Per Month</CardDescription>

@@ -1,7 +1,6 @@
 import DataTable from "@/components/manual-data-fetch-table";
 import { SectionCards } from "@/components/section-cards";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,33 +13,11 @@ import {
   useGetVendorStatsQuery,
   useLazyGetAllVendorsQuery,
 } from "@/store/services/adminApi";
-import { BadgeCheckIcon, MoreHorizontalIcon } from "lucide-react";
+import { BadgeCheckIcon, BanIcon, MoreHorizontalIcon } from "lucide-react";
 import moment from "moment";
 import { Link } from "react-router";
 
 const columns = [
-  {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
   {
     accessorKey: "company",
     header: "Company",
@@ -53,6 +30,7 @@ const columns = [
         {row.original.isVerified === "approved" && (
           <BadgeCheckIcon size="18" fill="blue" stroke="white" />
         )}
+        {row.original.isBlocked && <BanIcon size="14" />}
       </Link>
     ),
   },
@@ -129,11 +107,6 @@ const columns = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(row.original._id)}
-            >
-              Copy ID
-            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <Link to={`/vendors/profile/${row.original._id}`}>
               <DropdownMenuItem>View vendor</DropdownMenuItem>

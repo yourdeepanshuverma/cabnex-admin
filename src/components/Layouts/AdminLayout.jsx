@@ -29,15 +29,9 @@ const AdminLayout = () => {
             orientation="vertical"
             className="mr-2 data-[orientation=vertical]:h-4"
           />
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem className="hidden md:block">
-                <BreadcrumbPage className="text-muted-foreground text-lg font-medium">
-                  Welcome Admin !!
-                </BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
+          <h4 className="text-muted-foreground text-lg font-medium">
+            Welcome Admin !!
+          </h4>
           {/* <div className="ml-auto flex items-center gap-2">
             <ModeToggle />
           </div> */}

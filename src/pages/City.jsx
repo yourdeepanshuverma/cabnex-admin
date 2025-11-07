@@ -47,28 +47,6 @@ const City = () => {
 
   const columns = [
     {
-      id: "select",
-      header: ({ table }) => (
-        <Checkbox
-          checked={
-            table.getIsAllPageRowsSelected() ||
-            (table.getIsSomePageRowsSelected() && "indeterminate")
-          }
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all"
-        />
-      ),
-      cell: ({ row }) => (
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
-        />
-      ),
-      enableSorting: false,
-      enableHiding: false,
-    },
-    {
       accessorKey: "city",
       header: "City",
       cell: ({ row }) => (
@@ -109,11 +87,6 @@ const City = () => {
             </DropdownMenuTrigger>
             <DropdownMenuContent className="space-y-0.5" align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem
-                onClick={() => navigator.clipboard.writeText(row.original._id)}
-              >
-                Copy ID
-              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <Link to={`/city/${row.original._id}`}>
                 <DropdownMenuItem>View City</DropdownMenuItem>

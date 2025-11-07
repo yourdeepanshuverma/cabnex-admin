@@ -151,7 +151,6 @@ export default function PillTableSection({ data }) {
                       {activePill === "Outstation" && (
                         <td className="px-4 py-3 text-sm">{types[row.type]}</td>
                       )}
-
                       <td className="px-4 py-3 text-sm">
                         <span
                           className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${
@@ -163,7 +162,7 @@ export default function PillTableSection({ data }) {
                           {row.status}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-right text-sm">
+                      <td className="flex items-center justify-end px-4 py-3 text-right text-sm">
                         <Link
                           to={`/bookings/${row.bookingId}`}
                           className="cursor-pointer rounded-md bg-green-500 px-3 py-1 text-sm font-medium text-white hover:bg-green-500/80"
@@ -221,21 +220,6 @@ export default function PillTableSection({ data }) {
               </tbody>
             </table>
           </div>
-
-          {/* Footer controls
-          <div className="mt-4 flex items-center justify-between">
-            <div className="text-muted-foreground text-sm">
-              Tip: swipe the pills above to filter quickly.
-            </div>
-            <div className="flex items-center gap-2">
-              <button className="hover:bg-muted rounded-md px-3 py-1 text-sm font-medium">
-                Export
-              </button>
-              <button className="bg-primary rounded-md px-3 py-1 text-sm font-medium text-white hover:brightness-95">
-                Add
-              </button>
-            </div>
-          </div> */}
         </div>
       </div>
     </section>

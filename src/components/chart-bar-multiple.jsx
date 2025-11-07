@@ -29,9 +29,9 @@ const chartConfig = {
   },
 };
 
-export function ChartBarMultiple({ data }) {
+export function ChartBarMultiple({ data, className }) {
   return (
-    <Card>
+    <Card className={className}>
       <CardHeader>
         <CardTitle>Vendor & Car Bar Chart</CardTitle>
         <CardDescription>May - October 2025</CardDescription>

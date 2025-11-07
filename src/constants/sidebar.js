@@ -8,13 +8,13 @@ import {
 } from "lucide-react";
 
 const sidebarLinks = [
-  { title: "Dashboard", href: "/", icon: LayoutDashboardIcon },
+  { title: "Dashboard", href: "/dashboard", icon: LayoutDashboardIcon },
   { title: "Users", href: "/users", icon: User2Icon },
   { title: "Vendors", href: "/vendors", icon: IdCardIcon },
   { title: "Cars", href: "/cars", icon: CarTaxiFrontIcon },
   {
-    title: "Cars Categories",
-    href: "/cars-categories",
+    title: "Car Categories",
+    href: "/car-categories",
     icon: CarTaxiFrontIcon,
   },
   {

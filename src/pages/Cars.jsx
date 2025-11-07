@@ -1,7 +1,6 @@
 import DataTable from "@/components/manual-data-fetch-table";
 import { SectionCards } from "@/components/section-cards";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,28 +17,6 @@ import { BadgeCheckIcon, MoreHorizontalIcon } from "lucide-react";
 import { Link } from "react-router";
 
 const columns = [
-  {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
   {
     accessorKey: "make/model",
     header: () => {
@@ -130,15 +107,8 @@ const columns = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(row.original._id)}
-            >
-              Copy ID
-            </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <Link
-              to={`/cars/profile/${row.original._id}?model=${row.original.model}&make=${row.original.make}`}
-            >
+            <Link to={`/cars/profile/${row.original._id}`}>
               <DropdownMenuItem>View car</DropdownMenuItem>
             </Link>
           </DropdownMenuContent>

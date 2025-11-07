@@ -13,9 +13,36 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useGetDashboardStatsQuery } from "@/store/services/adminApi";
+import { CalendarCheck2Icon, CheckCheckIcon } from "lucide-react";
+import { Link } from "react-router";
 
 const Dashboard = () => {
-  const uiColor = ["bg-blue-200", "bg-cyan-200", "bg-red-200", "bg-green-200"];
+  const cardUi = [
+    {
+      color: "bg-blue-200",
+      hoverColor: "hover:bg-blue-300",
+      icon: <CalendarCheck2Icon className="md:size-10" />,
+      href: "/bookings",
+    },
+    {
+      color: "bg-cyan-200",
+      hoverColor: "hover:bg-cyan-300",
+      icon: <CalendarCheck2Icon className="md:size-10" />,
+      href: "/bookings?status=inProgress",
+    },
+    {
+      color: "bg-red-200",
+      hoverColor: "hover:bg-red-300",
+      icon: <CalendarCheck2Icon className="md:size-10" />,
+      href: "/bookings?status=inProgress",
+    },
+    {
+      color: "bg-green-200",
+      hoverColor: "hover:bg-green-300",
+      icon: <CheckCheckIcon className="md:size-10" />,
+      href: "/bookings?status=completed",
+    },
+  ];
 
   //   recentUsers: [
   //     {
@@ -90,268 +117,6 @@ const Dashboard = () => {
     }),
   });
 
-  console.log(dashboardStats);
-
-  const bookingsData = [
-    {
-      _id: "12345",
-      user: {
-        fullName: "Alice",
-        mobile: "123-456-7890",
-        email: "alice@example.com",
-      },
-      carCategory: {
-        name: "Sedan",
-        baseFare: 5.0,
-        perKmRate: 1.5,
-      },
-      serviceType: "outstation",
-      startLocation: {
-        address: "123 Main St, Cityville",
-        latitude: 40.7128,
-        longitude: -74.006,
-      },
-      pickupAddress: {
-        address: "456 Elm St, Townsville",
-        latitude: 40.7306,
-        longitude: -73.9352,
-      },
-      destinations: [
-        {
-          address: "789 Oak St, Villagetown",
-          latitude: 40.758,
-          longitude: -73.9855,
-        },
-        {
-          address: "101 Pine St, Hamletcity",
-          latitude: 40.706,
-          longitude: -74.0086,
-        },
-      ],
-      totalDays: 5,
-      totalDistance: 150,
-      totalAmount: 230,
-      status: "on-going",
-      assignedVendor: {
-        company: "Vendor Co.",
-        contactPerson: "Bob Smith",
-        contactPhone: "987-654-3210",
-        email: "contact@vendorco.com",
-      },
-      color: "bg-blue-100",
-    },
-    {
-      _id: "12346",
-      user: {
-        fullName: "Bob",
-        mobile: "223-456-7890",
-        email: "bob@example.com",
-      },
-      carCategory: {
-        name: "SUV",
-        baseFare: 7.0,
-        perKmRate: 2.0,
-      },
-      serviceType: "rental",
-      startLocation: {
-        address: "321 Maple St, Cityville",
-        latitude: 40.7128,
-        longitude: -74.006,
-      },
-      pickupAddress: {
-        address: "654 Cedar St, Townsville",
-        latitude: 40.7306,
-        longitude: -73.9352,
-      },
-      destinations: [
-        {
-          address: "987 Birch St, Villagetown",
-          latitude: 40.758,
-          longitude: -73.9855,
-        },
-      ],
-      totalDays: 3,
-      totalDistance: 90,
-      totalAmount: 180,
-      status: "on-going",
-      assignedVendor: {
-        company: "Auto Rentals",
-        contactPerson: "Sara Lee",
-        contactPhone: "876-543-2109",
-        email: "sara@autorentals.com",
-      },
-      color: "bg-blue-100",
-    },
-    {
-      _id: "12347",
-      user: {
-        fullName: "Charlie",
-        mobile: "323-456-7890",
-        email: "charlie@example.com",
-      },
-      carCategory: {
-        name: "Luxury",
-        baseFare: 10.0,
-        perKmRate: 3.0,
-      },
-      serviceType: "cityTaxi",
-      startLocation: {
-        address: "789 Oak St, Cityville",
-        latitude: 40.758,
-        longitude: -73.9855,
-      },
-      pickupAddress: {
-        address: "123 Main St, Cityville",
-        latitude: 40.7128,
-        longitude: -74.006,
-      },
-      destinations: [
-        {
-          address: "456 Elm St, Townsville",
-          latitude: 40.7306,
-          longitude: -73.9352,
-        },
-      ],
-      totalDays: 1,
-      totalDistance: 30,
-      totalAmount: 100,
-      status: "on-going",
-      assignedVendor: {
-        company: "City Cabs",
-        contactPerson: "Mike Johnson",
-        contactPhone: "765-432-1098",
-        email: "mike@citycabs.com",
-      },
-      color: "bg-blue-100",
-    },
-    {
-      _id: "12348",
-      user: {
-        fullName: "Diana",
-        mobile: "423-456-7890",
-        email: "diana@example.com",
-      },
-      carCategory: {
-        name: "SUV",
-        baseFare: 7.0,
-        perKmRate: 2.0,
-      },
-      serviceType: "rental",
-      startLocation: {
-        address: "321 Maple St, Cityville",
-        latitude: 40.7128,
-        longitude: -74.006,
-      },
-      pickupAddress: {
-        address: "654 Cedar St, Townsville",
-        latitude: 40.7306,
-        longitude: -73.9352,
-      },
-      destinations: [
-        {
-          address: "987 Birch St, Villagetown",
-          latitude: 40.758,
-          longitude: -73.9855,
-        },
-      ],
-      totalDays: 2,
-      totalDistance: 60,
-      totalAmount: 120,
-      status: "on-going",
-      assignedVendor: {
-        company: "Auto Rentals",
-        contactPerson: "Sara Lee",
-        contactPhone: "876-543-2109",
-        email: "sara@autorentals.com",
-      },
-      color: "bg-blue-100",
-    },
-    {
-      _id: "12349",
-      user: {
-        fullName: "Ethan",
-        mobile: "523-456-7890",
-        email: "ethan@example.com",
-      },
-      carCategory: {
-        name: "Luxury",
-        baseFare: 10.0,
-        perKmRate: 3.0,
-      },
-      serviceType: "outstation",
-      startLocation: {
-        address: "789 Oak St, Cityville",
-        latitude: 40.758,
-        longitude: -73.9855,
-      },
-      pickupAddress: {
-        address: "123 Main St, Cityville",
-        latitude: 40.7128,
-        longitude: -74.006,
-      },
-      destinations: [
-        {
-          address: "456 Elm St, Townsville",
-          latitude: 40.7306,
-          longitude: -73.9352,
-        },
-      ],
-      totalDays: 1,
-      totalDistance: 30,
-      totalAmount: 100,
-      status: "on-going",
-      assignedVendor: {
-        company: "City Cabs",
-        contactPerson: "Mike Johnson",
-        contactPhone: "765-432-1098",
-        email: "mike@citycabs.com",
-      },
-      color: "bg-blue-100",
-    },
-    {
-      _id: "1234239",
-      user: {
-        fullName: "Ethan",
-        mobile: "523-456-7890",
-        email: "ethan@example.com",
-      },
-      carCategory: {
-        name: "Luxury",
-        baseFare: 10.0,
-        perKmRate: 3.0,
-      },
-      serviceType: "outstation",
-      startLocation: {
-        address: "789 Oak St, Cityville",
-        latitude: 40.758,
-        longitude: -73.9855,
-      },
-      pickupAddress: {
-        address: "123 Main St, Cityville",
-        latitude: 40.7128,
-        longitude: -74.006,
-      },
-      destinations: [
-        {
-          address: "456 Elm St, Townsville",
-          latitude: 40.7306,
-          longitude: -73.9352,
-        },
-      ],
-      totalDays: 1,
-      totalDistance: 30,
-      totalAmount: 100,
-      status: "on-going",
-      assignedVendor: {
-        company: "City Cabs",
-        contactPerson: "Mike Johnson",
-        contactPhone: "765-432-1098",
-        email: "mike@citycabs.com",
-      },
-      color: "bg-blue-100",
-    },
-  ];
-
   const bookingColumns = [
     { key: "bookingId", label: "Booking ID" },
     { key: "userName", label: "User Name" },
@@ -378,49 +143,61 @@ const Dashboard = () => {
 
   return (
     <div className="grid grid-cols-12">
-      <div className="col-span-12 flex flex-1 flex-col gap-4 xl:col-span-9">
+      <div className="col-span-12 flex flex-1 flex-col gap-4 xl:col-span-12">
         <div className="@container/main flex flex-1 flex-col gap-2">
-          <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+          <div className="flex flex-col gap-4 py-2 md:gap-6 md:py-6">
             <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-2 gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs lg:px-6 @md/main:grid-cols-2 @2xl/main:grid-cols-4">
-              {dashboardStats?.bookings?.map(
-                ({ title, icon: Icon, stats }, index) => (
+              {dashboardStats?.bookings?.map(({ title, stats }, index) => (
+                <Link key={index} to={cardUi[index].href}>
                   <Card
-                    className={`@container/card ${uiColor[index]} dark:bg-sidebar`}
-                    key={index}
+                    className={`@container/card ${cardUi[index].color} ${cardUi[index].hoverColor} dark:bg-sidebar h-full`}
                   >
-                    <CardHeader>
-                      <CardDescription className="text-foreground font-medium">
-                        {title}
-                      </CardDescription>
-                      <CardTitle className="flex items-end gap-2 text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-                        {Icon && <Icon size={30} />} {stats}
-                      </CardTitle>
+                    <CardHeader className="flex items-center justify-between gap-4">
+                      <div>
+                        <CardDescription className="text-foreground text-xs font-medium md:text-lg">
+                          {title}
+                        </CardDescription>
+                        <CardTitle className="flex items-end gap-2 font-semibold tabular-nums md:text-2xl @[250px]/card:text-3xl">
+                          {stats}
+                        </CardTitle>
+                      </div>
+                      <div className="hidden rounded-lg bg-white p-2 md:block md:p-4">
+                        {cardUi[index].icon}
+                      </div>
                     </CardHeader>
                   </Card>
-                ),
-              )}
+                </Link>
+              ))}
             </div>
           </div>
         </div>
-        <div className="grid gap-4 px-4 lg:grid-cols-6 lg:gap-6 lg:px-6">
-          <div className="col-span-6 xl:col-span-4">
+        <div className="grid grid-cols-12 gap-4 px-4 lg:gap-6 lg:px-6">
+          <div className="col-span-12 xl:col-span-7">
             <RecentsCard
               title="In Progress Bookings"
               columns={bookingColumns}
               data={formattedBookingsData}
             />
           </div>
-          <div className="col-span-6 flex flex-col gap-4 xl:col-span-2">
-            <ChartLineDefault data={dashboardStats?.charts?.revenueChartData} />
-            <ChartBarHorizontal />
+          <div className="col-span-12 grid grid-cols-6 gap-4 xl:col-span-5">
+            <ChartLineDefault
+              className="col-span-6 md:col-span-3"
+              data={dashboardStats?.charts?.revenueChartData}
+            />
+            <ChartPieLabel
+              className="col-span-6 md:col-span-3"
+              data={dashboardStats?.charts?.bookingChartData}
+            />
+
+            <ChartBarMultiple
+              className="col-span-6"
+              data={dashboardStats?.charts?.vendorCarChartData}
+            />
           </div>
         </div>
       </div>
-      <div className="col-span-12 flex flex-col gap-4 lg:col-span-3">
-        {/* Booking Charts */}
-        <ChartPieLabel data={dashboardStats?.charts?.bookingChartData} />
-        <ChartBarMultiple data={dashboardStats?.charts?.vendorCarChartData} />
-      </div>
+      {/* <div className="col-span-12 flex flex-col gap-4 lg:col-span-3">
+      </div> */}
       <div className="col-span-12 mt-4 lg:mt-6">
         <PillTableSection data={dashboardStats?.pendingBookingsTable} />
       </div>
