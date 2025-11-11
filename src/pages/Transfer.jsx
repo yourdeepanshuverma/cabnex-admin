@@ -153,6 +153,7 @@ const AddTransferDialog = () => {
   });
   const [open, setOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [isSelecting, setIsSelecting] = useState(false);
 
   const [addNewTransfer, { isLoading }] = useAddTransferMutation();
 
@@ -196,6 +197,11 @@ const AddTransferDialog = () => {
       });
   };
 
+  // Google dropdown starts appearing — disable closing temporarily
+  const handleFocus = () => {
+    setIsSelecting(true);
+  };
+
   const handlePlaceChanged = (e) => {
     const place = autocompleteRef.current.getPlace();
 
@@ -237,6 +243,7 @@ const AddTransferDialog = () => {
       city: cityName,
       state: stateName,
     });
+    setIsSelecting(false);
   };
 
   return (
@@ -244,7 +251,12 @@ const AddTransferDialog = () => {
       googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
       libraries={libraries}
     >
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog
+        open={open}
+        onOpenChange={(v) => {
+          if (!isSelecting) setOpen(v);
+        }}
+      >
         <DialogTrigger asChild>
           <Button variant="outline">
             <PlusIcon className="h-4 w-4" />
@@ -261,8 +273,8 @@ const AddTransferDialog = () => {
                 <Label htmlFor="city">City</Label>
 
                 <div
-                  onMouseDown={(e) => e.stopPropagation()} // ✅ Prevent dialog close when clicking suggestions
-                  onTouchStart={(e) => e.stopPropagation()}
+                  onPointerDownCapture={(e) => e.stopPropagation()}
+                  onTouchStartCapture={(e) => e.stopPropagation()}
                 >
                   <Autocomplete
                     onLoad={(ref) => (autocompleteRef.current = ref)}
@@ -276,6 +288,8 @@ const AddTransferDialog = () => {
                       type="text"
                       placeholder="Search for a location"
                       className="w-full rounded-md border p-3"
+                      onFocus={handleFocus}
+                      onBlurCapture={() => setIsSelecting(false)}
                       required
                     />
                   </Autocomplete>

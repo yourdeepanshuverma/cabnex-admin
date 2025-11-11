@@ -7,11 +7,6 @@ export default function RecentsCard({
   actionLabel = "View All",
   onAction,
 }) {
-  const handleRowClick = (id) => {
-    if (data.length > 0) {
-      window.location.href = `/bookings/${id}`;
-    }
-  };
   return (
     <div className="border-border overflow-hidden rounded-xl border bg-white">
       <div className="border-border bg-chart-5/10 flex items-center justify-between border-b p-6">
@@ -44,11 +39,7 @@ export default function RecentsCard({
           <tbody className="divide-border divide-y">
             {(data.length !== 0 ? data : Array(5).fill(0))?.map(
               (row, index) => (
-                <tr
-                  onClick={() => handleRowClick(row._id)}
-                  key={index}
-                  className="hover:bg-muted/20 transition-colors"
-                >
+                <tr key={index} className="hover:bg-muted/20 transition-colors">
                   {columns.map((column) => {
                     const cellValue =
                       column.key

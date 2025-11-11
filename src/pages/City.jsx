@@ -91,19 +91,6 @@ const City = () => {
               <Link to={`/city/${row.original._id}`}>
                 <DropdownMenuItem>View City</DropdownMenuItem>
               </Link>
-              <Dialog>
-                <DialogTrigger asChild>
-                  <button className="m-0 px-1 py-2 text-sm">
-                    Duplicate City
-                  </button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-lg">
-                  <DialogHeader>
-                    <DialogTitle>Duplicate City</DialogTitle>
-                    <DialogDescription></DialogDescription>
-                  </DialogHeader>
-                </DialogContent>
-              </Dialog>
             </DropdownMenuContent>
           </DropdownMenu>
         );
@@ -274,6 +261,7 @@ const AddCityDialog = () => {
                       placeholder="Search for a location"
                       className="w-full rounded-md border p-3"
                       onFocus={handleFocus}
+                      onBlurCapture={() => setIsSelecting(false)}
                       id="city"
                       name="city"
                       required

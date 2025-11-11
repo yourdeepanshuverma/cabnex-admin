@@ -198,7 +198,7 @@ export default function BookingDetails({ data }) {
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                 <AlertDialogAction
                   disabled={isRejectLoading}
-                  onClick={() => handleReject(row.bookingId)}
+                  onClick={() => handleReject(bookingId)}
                 >
                   {isRejectLoading ? (
                     <Spinner className="w-full" />
