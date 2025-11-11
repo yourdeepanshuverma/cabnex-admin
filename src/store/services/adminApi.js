@@ -442,10 +442,28 @@ export const adminApi = createApi({
       }),
       invalidatesTags: ["ActivityPackage"],
     }),
+    createUser: builder.mutation({
+      query: (data) => ({
+        url: "/admin/create-user",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["Users"],
+    }),
+    createVendor: builder.mutation({
+      query: (data) => ({
+        url: "/admin/create-vendor",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["Vendors"],
+    }),
   }),
 });
 
 export const {
+  useCreateUserMutation,
+  useCreateVendorMutation,
   useUpdateActivityPackageMutation,
   useDeleteActivityPackageMutation,
   useToggleActivityPackageStatusMutation,

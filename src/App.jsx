@@ -28,6 +28,7 @@ const ActivityPackages = lazy(() => import("./pages/ActivityPackages"));
 const ActivityPackageDetails = lazy(
   () => import("./pages/ActivityPackageDetails"),
 );
+const CreateProfiles = lazy(() => import("./pages/CreateProfiles"));
 
 const App = () => {
   return (
@@ -63,6 +64,7 @@ const App = () => {
           element={<ActivityPackageDetails />}
         />
         <Route path="/settings" element={<WebsiteSetting />} />
+        <Route path="/create-profiles" element={<CreateProfiles />} />
       </Route>
       <Route
         path="/login"

@@ -5,6 +5,7 @@ import {
   TentTreeIcon,
   TicketIcon,
   User2Icon,
+  PlusIcon,
 } from "lucide-react";
 
 const sidebarLinks = [
@@ -42,6 +43,11 @@ const sidebarLinks = [
     title: "Activity Packages",
     href: "/activity-packages",
     icon: TentTreeIcon,
+  },
+  {
+    title: "Create Profiles",
+    href: "/create-profiles",
+    icon: PlusIcon,
   },
 ];
 
