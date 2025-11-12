@@ -19,7 +19,8 @@ export default function CreateProfiles() {
   const [createVendor, { isLoading: isCreatingVendor }] =
     useCreateVendorMutation();
 
-  const handleCreateUser = async () => {
+  const handleCreateUser = async (e) => {
+    e.preventDefault();
     await createUser()
       .unwrap()
       .then(({ data }) => {
@@ -30,7 +31,8 @@ export default function CreateProfiles() {
       });
   };
 
-  const handleCreateVendor = async () => {
+  const handleCreateVendor = async (e) => {
+    e.preventDefault();
     await createVendor()
       .unwrap()
       .then(({ data }) => {
