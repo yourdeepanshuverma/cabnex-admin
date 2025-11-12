@@ -362,18 +362,18 @@ const ActivityDialog = ({
       <DialogContent className="my-4 flex max-h-full flex-col overflow-y-auto sm:max-w-4xl">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
+          <DialogDescription>
+            {description}{" "}
+            <span className="text-xs font-bold">
+              (Add more cities to add activities in them)
+            </span>
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             {/* City ID */}
             <div className="space-y-2">
-              <Label>
-                Select City
-                <Link title="Add More cities" to="/city" className="m-0 p-0">
-                  *
-                </Link>
-              </Label>
+              <Label>Select City</Label>
               <Select
                 name="cityId"
                 value={formData.cityId}

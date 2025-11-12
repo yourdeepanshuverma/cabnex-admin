@@ -52,7 +52,7 @@ export default function CreateProfiles() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form>
+          <form onSubmit={handleCreateUser}>
             <div className="grid grid-cols-2 gap-6">
               <Field className="col-span-2 md:col-span-1">
                 <FieldLabel htmlFor="name">Full Name</FieldLabel>
@@ -122,7 +122,9 @@ export default function CreateProfiles() {
               </Field>
             </div>
             <Field className="mt-6">
-              <Button type="submit">Create User Account</Button>
+              <Button disabled={isCreatingUser} type="submit">
+                Create User Account
+              </Button>
             </Field>
           </form>
         </CardContent>
@@ -137,7 +139,7 @@ export default function CreateProfiles() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form>
+          <form onSubmit={handleCreateVendor}>
             <div className="grid grid-cols-2 gap-6">
               <Field className="col-span-2 md:col-span-1">
                 <FieldLabel htmlFor="contactPerson">Name</FieldLabel>
@@ -217,7 +219,9 @@ export default function CreateProfiles() {
               </Field>
             </div>
             <Field className="mt-6">
-              <Button type="submit">Create Vendor Account</Button>
+              <Button disabled={isCreatingVendor} type="submit">
+                Create Vendor Account
+              </Button>
             </Field>
           </form>
         </CardContent>
