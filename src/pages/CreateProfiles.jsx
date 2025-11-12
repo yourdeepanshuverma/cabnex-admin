@@ -57,9 +57,10 @@ export default function CreateProfiles() {
           <form onSubmit={handleCreateUser}>
             <div className="grid grid-cols-2 gap-6">
               <Field className="col-span-2 md:col-span-1">
-                <FieldLabel htmlFor="name">Full Name</FieldLabel>
+                <FieldLabel htmlFor="fullName">Full Name</FieldLabel>
                 <Input
-                  id="name"
+                  id="fullName"
+                  name="fullName"
                   type="text"
                   placeholder="John Doe"
                   autoComplete="name"
@@ -70,6 +71,7 @@ export default function CreateProfiles() {
                 <FieldLabel htmlFor="email">Email</FieldLabel>
                 <Input
                   id="email"
+                  name="email"
                   type="email"
                   autoComplete="email"
                   placeholder="m@example.com"
@@ -80,6 +82,7 @@ export default function CreateProfiles() {
                 <FieldLabel htmlFor="mobile">Mobile</FieldLabel>
                 <Input
                   id="mobile"
+                  name="mobile"
                   type="tel"
                   pattern="^\+?[1-9]\d{1,14}$"
                   autoComplete="tel"
@@ -94,12 +97,19 @@ export default function CreateProfiles() {
                     (Must be at least 8 characters long)
                   </span>
                 </FieldLabel>
-                <Input id="password" type="password" minLength={8} required />
+                <Input
+                  id="password"
+                  name="password"
+                  type="password"
+                  minLength={8}
+                  required
+                />
               </Field>
               <Field className="col-span-2 md:col-span-1">
                 <FieldLabel htmlFor="pan">PAN</FieldLabel>
                 <Input
                   id="pan"
+                  name="pan"
                   type="text"
                   minLength={10}
                   maxLength={10}
@@ -113,6 +123,7 @@ export default function CreateProfiles() {
                 <FieldLabel htmlFor="gst">GST Number</FieldLabel>
                 <Input
                   id="gst"
+                  name="gst"
                   type="text"
                   autoComplete="gst"
                   minLength={15}
