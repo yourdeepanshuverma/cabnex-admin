@@ -21,7 +21,19 @@ export default function CreateProfiles() {
 
   const handleCreateUser = async (e) => {
     e.preventDefault();
-    await createUser()
+
+    const data = new FormData(e.target);
+
+    const payload = {
+      fullName: data.get("fullName"),
+      email: data.get("email"),
+      mobile: data.get("mobile"),
+      password: data.get("password"),
+      pan: data.get("pan"),
+      gst: data.get("gst"),
+    };
+
+    await createUser(payload)
       .unwrap()
       .then(({ data }) => {
         toast.success(data?.message || "User created successfully");
@@ -33,7 +45,20 @@ export default function CreateProfiles() {
 
   const handleCreateVendor = async (e) => {
     e.preventDefault();
-    await createVendor()
+
+    const data = new FormData(e.target);
+
+    const payload = {
+      contactPerson: data.get("contactPerson"),
+      company: data.get("company"),
+      email: data.get("email"),
+      contactPhone: data.get("contactPhone"),
+      password: data.get("password"),
+      pan: data.get("pan"),
+      gst: data.get("gst"),
+    };
+
+    await createVendor(payload)
       .unwrap()
       .then(({ data }) => {
         toast.success(data?.message || "Vendor created successfully");
