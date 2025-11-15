@@ -42,9 +42,9 @@ const Bookings = () => {
       header: "User Name",
       cell: ({ row }) => (
         <div className="capitalize">
-          {row.original.userId.fullName}(
-          <Link to={`tel:${row.original.userId.mobile}`}>
-            {row.original.userId.mobile}
+          {row.original?.userId?.fullName}(
+          <Link to={`tel:${row.original?.userId?.mobile}`}>
+            {row.original?.userId?.mobile}
           </Link>
           )
         </div>
@@ -54,7 +54,7 @@ const Bookings = () => {
       accessorKey: "serviceType",
       header: "Service Type",
       cell: ({ row }) => (
-        <div className="capitalize">{row.original.serviceType}</div>
+        <div className="capitalize">{row.original?.serviceType}</div>
       ),
     },
     {
@@ -70,21 +70,21 @@ const Bookings = () => {
       accessorKey: "totalAmount",
       header: "Total Amount",
       cell: ({ row }) => (
-        <div className="capitalize">{row.original.totalAmount}</div>
+        <div className="capitalize">{row.original?.totalAmount}</div>
       ),
     },
     {
       accessorKey: "recievedAmount",
       header: "Received Amount",
       cell: ({ row }) => (
-        <div className="capitalize">{row.original.recievedAmount}</div>
+        <div className="capitalize">{row.original?.recievedAmount}</div>
       ),
     },
     {
       accessorKey: "status",
       header: "Status",
       cell: ({ row }) => (
-        <div className="capitalize">{row.original.status}</div>
+        <div className="capitalize">{row.original?.status}</div>
       ),
     },
     {
@@ -93,7 +93,7 @@ const Bookings = () => {
       cell: ({ row }) => (
         <div className="capitalize">
           {row.original.assignedVendor
-            ? row.original.assignedVendor.company
+            ? row.original.assignedVendor?.company
             : "N/A"}
         </div>
       ),
@@ -103,7 +103,7 @@ const Bookings = () => {
       header: "Created At",
       cell: ({ row }) => (
         <div className="capitalize">
-          {moment(row.original.createdAt).format("MMMM Do YYYY, h:mm a")}
+          {moment(row.original?.createdAt).format("MMMM Do YYYY, h:mm a")}
         </div>
       ),
     },
@@ -122,7 +122,7 @@ const Bookings = () => {
             <DropdownMenuContent className="space-y-0.5" align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <Link to={`/bookings/${row.original.bookingId}`}>
+              <Link to={`/bookings/${row.original?.bookingId}`}>
                 <DropdownMenuItem>View Booking</DropdownMenuItem>
               </Link>
             </DropdownMenuContent>
