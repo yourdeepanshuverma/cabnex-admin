@@ -35,6 +35,11 @@ const sidebarLinks = [
     icon: TentTreeIcon,
   },
   {
+    title: "Travel Queries",
+    href: "/travel-queries",
+    icon: TentTreeIcon,
+  },
+  {
     title: "Rental Packages",
     href: "/rental-packages",
     icon: TentTreeIcon,

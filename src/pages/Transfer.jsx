@@ -270,7 +270,7 @@ const AddTransferDialog = () => {
           <form onSubmit={handleSave} className="space-y-4">
             <div className="grid gap-4">
               <div className="space-y-2">
-                <Label htmlFor="city">City</Label>
+                <Label>Place</Label>
 
                 <div
                   onPointerDownCapture={(e) => e.stopPropagation()}

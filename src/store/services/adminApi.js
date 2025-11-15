@@ -458,10 +458,17 @@ export const adminApi = createApi({
       }),
       invalidatesTags: ["Vendors"],
     }),
+    getTravelQuery: builder.query({
+      query: () => ({
+        url: "/admin/travel-queries",
+      }),
+      providesTags: ["TravelQuery"],
+    }),
   }),
 });
 
 export const {
+  useGetTravelQueryQuery,
   useCreateUserMutation,
   useCreateVendorMutation,
   useUpdateActivityPackageMutation,

@@ -29,6 +29,8 @@ const ActivityPackageDetails = lazy(
   () => import("./pages/ActivityPackageDetails"),
 );
 const CreateProfiles = lazy(() => import("./pages/CreateProfiles"));
+const TravelQuery = lazy(() => import("./pages/TravelQuery"));
+const TravelQueryDetails = lazy(() => import("./pages/TravelQueryDetails"));
 
 const App = () => {
   return (
@@ -59,6 +61,8 @@ const App = () => {
         <Route path="/transfers" element={<Transfer />} />
         <Route path="/transfers/:id" element={<TransferView />} />
         <Route path="/activity-packages" element={<ActivityPackages />} />
+        <Route path="/travel-queries" element={<TravelQuery />} />
+        <Route path="/travel-queries/:id" element={<TravelQueryDetails />} />
         <Route
           path="/activity-packages/:id"
           element={<ActivityPackageDetails />}
