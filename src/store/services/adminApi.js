@@ -103,6 +103,7 @@ export const adminApi = createApi({
       query: (id) => ({
         url: `/admin/users/${id}`,
       }),
+      providesTags: ["User"],
     }),
     // Get Vendor Stats
     getVendorStats: builder.query({
@@ -132,6 +133,14 @@ export const adminApi = createApi({
       providesTags: ["Vendor"],
     }),
     // update a Vendor
+    updateAUser: builder.mutation({
+      query: ({ id, data }) => ({
+        url: `/admin/users/${id}`,
+        method: "PATCH",
+        body: data,
+      }),
+      invalidatesTags: ["User", "UserStats"],
+    }),
     updateAVendor: builder.mutation({
       query: ({ id, data }) => ({
         url: `/admin/vendors/${id}`,
@@ -510,6 +519,7 @@ export const {
   useAddTravelPackageMutation,
   useUpdateACarMutation,
   useUpdateAVendorMutation,
+  useUpdateAUserMutation,
   useGetCarDetailsQuery,
   useGetCarStatsQuery,
   useGetVendorStatsQuery,

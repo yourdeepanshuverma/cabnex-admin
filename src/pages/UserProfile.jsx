@@ -12,10 +12,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
 import Spinner from "@/components/ui/spinner";
-import { useGetUserDetailsQuery } from "@/store/services/adminApi";
+import {
+  useGetUserDetailsQuery,
+  useUpdateAUserMutation,
+} from "@/store/services/adminApi";
 import { MailIcon, MoreHorizontalIcon, PhoneIcon } from "lucide-react";
 import moment from "moment";
 import { Link, useParams } from "react-router";
+import { toast } from "sonner";
 
 export default function UserProfile() {
   const { id } = useParams();
@@ -117,6 +121,48 @@ export default function UserProfile() {
     },
   ];
 
+  const [updateAUser] = useUpdateAUserMutation();
+
+  const handleApprove = async () => {
+    await updateAUser({ id, data: { isVerified: "approved" } })
+      .then(({ data }) => toast.success(data?.message))
+      .catch((err) =>
+        toast.error(err?.data?.message || "Something went wrong"),
+      );
+  };
+
+  const handleReject = async () => {
+    await updateAUser({ id, data: { isVerified: "rejected" } })
+      .then(({ data }) => toast.success(data?.message))
+      .catch((err) =>
+        toast.error(err?.data?.message || "Something went wrong"),
+      );
+  };
+
+  const handleBlock = async () => {
+    await updateAUser({ id, data: { isBlocked: true } })
+      .then(({ data }) => toast.success(data?.message))
+      .catch((err) =>
+        toast.error(err?.data?.message || "Something went wrong"),
+      );
+  };
+
+  const handleUnblock = async () => {
+    await updateAUser({ id, data: { isBlocked: false } })
+      .then(({ data }) => toast.success(data?.message))
+      .catch((err) =>
+        toast.error(err?.data?.message || "Something went wrong"),
+      );
+  };
+
+  const handleDisapprove = async () => {
+    await updateAUser({ id, data: { isVerified: "pending" } })
+      .then(({ data }) => toast.success(data?.message))
+      .catch((err) =>
+        toast.error(err?.data?.message || "Something went wrong"),
+      );
+  };
+
   if (isLoading) {
     return (
       <div className="flex h-[80vh] w-full items-center justify-center gap-4">
@@ -125,9 +171,55 @@ export default function UserProfile() {
     );
   }
 
+  console.log(user.data);
+
   return (
-    <>
+    <div className="w-full space-y-6">
       <Back />
+      {/* Approve / Reject Buttons */}
+      {user?.data?.isVerified !== "approved" && (
+        <div className="flex items-center justify-end gap-2">
+          <Button
+            onClick={handleApprove}
+            className="bg-chart-5 hover:bg-chart-4 text-white hover:text-white"
+            variant="outline"
+          >
+            Approve
+          </Button>
+          {user?.data?.isVerified === "pending" && (
+            <Button
+              onClick={handleReject}
+              className="text-red-700"
+              variant="ghost"
+            >
+              Reject
+            </Button>
+          )}
+        </div>
+      )}
+      {/* Disapprove / Block Buttons */}
+      {user?.data?.isVerified === "approved" && (
+        <div className="flex items-center justify-end gap-2">
+          {user?.data?.isVerified === "approved" && (
+            <Button onClick={handleDisapprove} variant="destructive">
+              Disapprove
+            </Button>
+          )}
+          {user?.data?.isBlocked ? (
+            <Button
+              onClick={handleUnblock}
+              className="text-red-700"
+              variant="ghost"
+            >
+              Unblock Vendor
+            </Button>
+          ) : (
+            <Button onClick={handleBlock} variant="destructive">
+              Block Vendor
+            </Button>
+          )}
+        </div>
+      )}
       <Card className="mx-auto w-full rounded-2xl shadow-md">
         <CardHeader>
           <CardTitle className="text-2xl font-semibold">
@@ -160,6 +252,6 @@ export default function UserProfile() {
           />
         </CardContent>
       </Card>
-    </>
+    </div>
   );
 }
