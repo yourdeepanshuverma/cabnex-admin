@@ -237,6 +237,15 @@ export const adminApi = createApi({
       }),
       invalidatesTags: ["City"],
     }),
+    // Update City Charges
+    updateCityCharges: builder.mutation({
+      query: ({ cityId, data }) => ({
+        url: `/admin/cities/${cityId}/charges`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["City"],
+    }),
     // Add New Category to City
     addNewCategoryToCity: builder.mutation({
       query: ({ cityId, category }) => ({
@@ -468,6 +477,7 @@ export const adminApi = createApi({
 });
 
 export const {
+  useUpdateCityChargesMutation,
   useGetTravelQueryQuery,
   useCreateUserMutation,
   useCreateVendorMutation,

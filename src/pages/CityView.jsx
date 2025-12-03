@@ -17,6 +17,7 @@ import {
   useGetCitiesQuery,
   useToggleCategoryStatusFromCityMutation,
   useUpdateCategoryFromCityMutation,
+  useUpdateCityChargesMutation,
 } from "@/store/services/adminApi";
 import { useParams } from "react-router";
 import { toast } from "sonner";
@@ -43,6 +44,11 @@ import { Switch } from "@/components/ui/switch";
 
 export default function CityView() {
   const { id } = useParams();
+
+  const [cityCharges, setCityCharges] = useState({
+    bufferKm: 0,
+    hillCharge: 0,
+  });
 
   const [newCategory, setNewCategory] = useState("");
   const [fareDetails, setFareDetails] = useState({
@@ -76,6 +82,9 @@ export default function CityView() {
         .filter((i) => !city?.category?.some((cat) => cat.type._id === i._id)),
     }),
   });
+
+  const [updateCityCharges, { isLoading: updateCityChargesLoading }] =
+    useUpdateCityChargesMutation();
 
   const [addNewCategoryToCity, { isLoading: addNewCategoryLoading }] =
     useAddNewCategoryToCityMutation();
@@ -111,7 +120,6 @@ export default function CityView() {
           driverAllowance: "",
           nightCharge: "",
           permitCharge: "",
-          hillCharge: "",
           taxSlab: "",
         });
       })
@@ -159,8 +167,22 @@ export default function CityView() {
       });
   };
 
+  const handleUpdateCityCharges = () => {
+    updateCityCharges({
+      cityId: city?._id,
+      data: cityCharges,
+    })
+      .unwrap()
+      .then(({ data }) => {
+        toast.success(data?.message || "City charges updated");
+      })
+      .catch((err) => {
+        toast.error(err?.data?.message || "Something went wrong");
+      });
+  };
+
   return (
-    <div className="space-y-8">
+    <div className="mx-auto max-w-6xl space-y-8">
       <Back />
 
       <Separator />
@@ -173,11 +195,49 @@ export default function CityView() {
         </p>
       </div>
 
+      <div className="flex items-end gap-4">
+        <div className="space-y-1">
+          <Label className="font-semibold">Buffer Km</Label>
+          <Input
+            type="number"
+            label="Buffer Km"
+            defaultValue={city?.bufferKm}
+            onChange={(e) =>
+              setCityCharges({ ...cityCharges, bufferKm: e.target.value })
+            }
+            className="max-w-sm"
+            placeholder="in kilometers"
+            disabled={updateCityChargesLoading}
+          />
+        </div>
+        <div className="space-y-1">
+          <Label className="font-semibold">Hill Charge</Label>
+          <Input
+            type="number"
+            label="Hill Charge"
+            defaultValue={city?.hillCharge}
+            onChange={(e) =>
+              setCityCharges({ ...cityCharges, hillCharge: e.target.value })
+            }
+            className="max-w-sm"
+            placeholder="in Rupees"
+            disabled={updateCityChargesLoading}
+          />
+        </div>
+        <Button
+          onClick={handleUpdateCityCharges}
+          disabled={updateCityChargesLoading}
+        >
+          {" "}
+          Update
+        </Button>
+      </div>
+
       <Separator />
 
       {/* Existing Categories */}
-      <div className="w-full overflow-x-auto rounded-md border">
-        <Table className="min-w-max">
+      <div className="overflow-x-auto rounded-md border">
+        <Table>
           <TableHeader className="bg-orange-500/10">
             <TableRow>
               <TableHead className="w-[60px]">Image</TableHead>
@@ -193,14 +253,13 @@ export default function CityView() {
               <TableHead>Driver</TableHead>
               <TableHead>Night Charge</TableHead>
               <TableHead>Permit Charge</TableHead>
-              <TableHead>Hill Charge</TableHead>
               <TableHead>Tax Slab</TableHead>
               <TableHead className="text-right">Actions</TableHead>
               <TableHead className="text-center">Visibility</TableHead>
             </TableRow>
           </TableHeader>
 
-          <TableBody className="w-full">
+          <TableBody className="">
             {city?.category.length > 0 ? (
               city.category.map((cat) => (
                 <TableRow key={cat._id}>
@@ -236,7 +295,6 @@ export default function CityView() {
                   <TableCell>{cat.driverAllowance}</TableCell>
                   <TableCell>{cat.nightCharge}</TableCell>
                   <TableCell>{cat.permitCharge}</TableCell>
-                  <TableCell>{cat.hillCharge}</TableCell>
                   <TableCell>{cat.taxSlab}%</TableCell>
                   <TableCell className="text-right">
                     <Dialog>
