@@ -1,6 +1,5 @@
 import AutopaginateTable from "@/components/auto-paginate-table";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogClose,
@@ -21,17 +20,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import Spinner from "@/components/ui/spinner";
 import {
   useAddNewCityMutation,
-  useGetCarCategoriesQuery,
   useGetCitiesQuery,
 } from "@/store/services/adminApi";
 import { Autocomplete, LoadScript } from "@react-google-maps/api";
@@ -123,23 +114,12 @@ const AddCityDialog = () => {
     state: "",
   });
   const [open, setOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState("");
   const [isSelecting, setIsSelecting] = useState(false);
 
   const [addNewCity] = useAddNewCityMutation();
 
-  const { data: categories } = useGetCarCategoriesQuery(undefined, {
-    selectFromResult: ({ data }) => ({
-      data: data?.data?.categories.map((i) => ({
-        _id: i._id,
-        category: i.category,
-      })),
-    }),
-  });
-
   const handleSave = async (e) => {
     e.preventDefault();
-    if (!selectedCategory) return toast("Please select a category");
 
     const form = e.target;
     const formData = new FormData(form);
@@ -149,31 +129,14 @@ const AddCityDialog = () => {
       city: city.name,
       place_id: city.place_id,
       state: city.state,
-      category: [
-        {
-          type: selectedCategory,
-          baseFare: data.baseFare,
-          perKmCharge: data.perKmCharge,
-          perHourCharge: data.perHourCharge,
-          marketFare: data.marketFare,
-          freeKmPerDay: data.freeKmPerDay,
-          freeHoursPerDay: data.freeHoursPerDay,
-          extraKmCharge: data.extraKmCharge,
-          extraHourCharge: data.extraHourCharge,
-          driverAllowance: data.driverAllowance,
-          nightCharge: data.nightCharge,
-          permitCharge: data.permitCharge,
-          hillCharge: data.hillCharge,
-          taxSlab: data.taxSlab,
-        },
-      ],
+      bufferKm: data.bufferKm,
+      hillCharge: data.hillCharge,
     })
       .unwrap()
       .then((data) => {
         toast.success(data.message);
         toast.success("Add more categories from city view");
         form.reset();
-        setSelectedCategory("");
         setCity({ name: "", place_id: "", state: "" });
         setOpen(false);
       })
@@ -279,56 +242,23 @@ const AddCityDialog = () => {
                   value={city.state}
                 />
               </div>
-              {/* Category fields */}
-              <div className="space-y-2">
-                <Label>Select Category</Label>
-                <Select
-                  required
-                  name="categoryId"
-                  value={selectedCategory}
-                  onValueChange={(val) => setSelectedCategory(val)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Choose category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories?.map((i) => (
-                      <SelectItem key={i._id} value={i._id}>
-                        {i.category}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
-                {[
-                  "baseFare",
-                  "marketFare",
-                  "perKmCharge",
-                  "perHourCharge",
-                  "freeKmPerDay",
-                  "freeHoursPerDay",
-                  "extraKmCharge",
-                  "extraHourCharge",
-                  "driverAllowance",
-                  "nightCharge",
-                  "permitCharge",
-                  "hillCharge",
-                  "taxSlab",
-                ].map((key) => (
-                  <div key={key} className="grid gap-2">
-                    <Label htmlFor={key} className="capitalize">
-                      {key.replace(/([A-Z])/g, " $1")}
-                    </Label>
-                    <Input
-                      id={key}
-                      name={key}
-                      type="number"
-                      placeholder={0}
-                      required
-                    />
-                  </div>
-                ))}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="bufferKm">Bffer km</Label>
+                  <Input
+                    id="bufferKm"
+                    name="bufferKm"
+                    placeholder="Enter buffer km"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="hillCharge">Hill Charge</Label>
+                  <Input
+                    id="hillCharge"
+                    name="hillCharge"
+                    placeholder="Enter hill charge"
+                  />
+                </div>
               </div>
             </div>
             <DialogFooter>
