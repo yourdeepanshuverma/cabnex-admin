@@ -14,7 +14,7 @@ createRoot(document.getElementById("root")).render(
       <ThemeProvider
         storageKey="vite-ui-theme"
         attribute="class"
-        defaultTheme="system"
+        defaultTheme="light"
         enableSystem
       >
         <BrowserRouter>
