@@ -171,8 +171,6 @@ export default function UserProfile() {
     );
   }
 
-  console.log(user.data);
-
   return (
     <div className="w-full space-y-6">
       <Back />
@@ -237,6 +235,12 @@ export default function UserProfile() {
           >
             <PhoneIcon size={16} /> {user?.data?.mobile}
           </Link>
+          <p className="text-muted-foreground mt-1 text-sm">
+            Pan Number : {user?.data?.pan || "N/A"}
+          </p>
+          <p className="text-muted-foreground mt-1 text-sm">
+            GST Number : {user?.data?.gst || "N/A"}
+          </p>
           <p className="text-muted-foreground mt-1 text-sm">
             Joined: {new Date(user?.data?.createdAt).toLocaleDateString()}
           </p>
