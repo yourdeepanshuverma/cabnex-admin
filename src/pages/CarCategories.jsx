@@ -30,6 +30,7 @@ const CarCategories = () => {
     const formData = new FormData();
 
     formData.append("category", data.category);
+    formData.append("seats", data.seats);
     data.carNames.forEach((car) => formData.append("carNames[]", car));
 
     if (data.image instanceof File) {

@@ -18,6 +18,7 @@ import { Label } from "./ui/label";
 const CarCategoryDialog = ({ title, children, data, onSave, className }) => {
   const [form, setForm] = useState({
     category: "",
+    seats: 4,
     carNames: [],
     image: null,
     icon: null,
@@ -30,6 +31,7 @@ const CarCategoryDialog = ({ title, children, data, onSave, className }) => {
     if (data) {
       setForm({
         category: data?.category || "",
+        seats: data?.seats || 4,
         carNames: data?.carNames || [],
         image: null,
         icon: null,
@@ -40,6 +42,7 @@ const CarCategoryDialog = ({ title, children, data, onSave, className }) => {
       // reset for add mode
       setForm({
         category: "",
+        seats: 4,
         carNames: [],
         image: null,
         icon: null,
@@ -102,8 +105,10 @@ const CarCategoryDialog = ({ title, children, data, onSave, className }) => {
 
     setForm({
       category: "",
+      seats: 4,
       carNames: [],
       image: null,
+      icon: null,
     });
     setPreview("");
     setPreviewIcon("");
@@ -128,6 +133,30 @@ const CarCategoryDialog = ({ title, children, data, onSave, className }) => {
                 value={form.category}
                 onChange={onValueChange}
                 name="category"
+              />
+            </div>
+            <div className="col-span-2 space-y-2">
+              <Label htmlFor="category">Category</Label>
+              <Input
+                required={!data}
+                className="lowercase"
+                placeholder="sedan, suv, premium sedan"
+                value={form.category}
+                onChange={onValueChange}
+                name="category"
+              />
+            </div>
+            <div className="col-span-2 space-y-2">
+              <Label htmlFor="seats">
+                Seats <span className="text-xs">({form.seats} + 1 Seats)</span>
+              </Label>
+              <Input
+                type="number"
+                min={1}
+                max={20}
+                value={form.seats}
+                onChange={onValueChange}
+                name="seats"
               />
             </div>
             <div className="col-span-2 space-y-2">
