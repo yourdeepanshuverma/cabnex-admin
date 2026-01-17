@@ -153,7 +153,7 @@ const CarCategoryDialog = ({ title, children, data, onSave, className }) => {
               <Input
                 type="number"
                 min={1}
-                max={20}
+                max={100}
                 value={form.seats}
                 onChange={onValueChange}
                 name="seats"
