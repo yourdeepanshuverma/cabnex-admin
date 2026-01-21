@@ -59,9 +59,22 @@ const columns = [
     ),
   },
   {
+    accessorKey: "isVerified",
+    header: () => {
+      return <div>Status</div>;
+    },
+    cell: ({ row }) => (
+      <div
+        className={`capitalize ${row.getValue("isVerified") === "approved" ? "text-green-500" : row.getValue("isVerified") === "pending" ? "text-yellow-500" : "text-red-500"}`}
+      >
+        {row.getValue("isVerified")}
+      </div>
+    ),
+  },
+  {
     accessorKey: "createdAt",
     header: () => {
-      return <div>Created At</div>;
+      return <div>Joined</div>;
     },
     cell: ({ row }) => (
       <div>{moment(row.getValue("createdAt")).format("MMM D, YYYY")}</div>
