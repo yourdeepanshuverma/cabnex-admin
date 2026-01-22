@@ -294,7 +294,11 @@ export default function BookingDetails({ data }) {
                 <p className="text-sm text-gray-500">Destinations</p>
                 <ul className="list-inside list-disc text-gray-800">
                   {destinations.map((d, i) => (
-                    <li key={i}>{d.address}</li>
+                    <li key={i}>
+                      {d.address} ({" "}
+                      {moment(d.dateTime).format("MMMM Do YYYY, h:mm a")}
+                      {""})
+                    </li>
                   ))}
                 </ul>
               </div>
