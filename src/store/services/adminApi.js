@@ -89,12 +89,20 @@ export const adminApi = createApi({
     }),
     // Get All Users
     getAllUsers: builder.query({
-      query: ({ search = "", page = 1, resultPerPage = 10 }) => ({
+      query: ({
+        search = "",
+        page = 1,
+        resultPerPage = 10,
+        startDate,
+        endDate,
+      }) => ({
         url: "/admin/users",
         params: {
           search,
           page,
           resultPerPage,
+          startDate,
+          endDate,
         },
       }),
     }),
@@ -114,13 +122,22 @@ export const adminApi = createApi({
     }),
     // Get All Vendors
     getAllVendors: builder.query({
-      query: ({ search = "", page = 1, resultPerPage = 10, status = "" }) => ({
+      query: ({
+        search = "",
+        page = 1,
+        resultPerPage = 10,
+        status = "",
+        startDate,
+        endDate,
+      }) => ({
         url: "/admin/vendors",
         params: {
           search,
           page,
           resultPerPage,
           status,
+          startDate,
+          endDate,
         },
       }),
       providesTags: ["Vendors"],
@@ -157,13 +174,22 @@ export const adminApi = createApi({
     }),
     // Get All Bookings
     getAllBookings: builder.query({
-      query: ({ search = "", page = 1, resultPerPage = 10, status = "" }) => ({
+      query: ({
+        search = "",
+        page = 1,
+        resultPerPage = 10,
+        status = "",
+        startDate,
+        endDate,
+      }) => ({
         url: "/admin/bookings",
         params: {
           search,
           page,
           resultPerPage,
           status,
+          startDate,
+          endDate,
         },
       }),
       providesTags: ["Bookings"],

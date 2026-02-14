@@ -28,6 +28,15 @@ import {
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import Spinner from "./ui/spinner";
+import { DateRange } from "react-date-range";
+import "react-date-range/dist/styles.css"; // main style file
+import "react-date-range/dist/theme/default.css"; // theme css file
+import * as XLSX from "xlsx";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 export default function ManualDataFetchTable({
   searchText,
@@ -43,10 +52,18 @@ export default function ManualDataFetchTable({
     pageIndex: 0,
     pageSize: 10,
   });
+  const [dateRange, setDateRange] = useState([
+    {
+      startDate: null,
+      endDate: null,
+      key: "selection",
+    },
+  ]);
+  const [isDatePopoverOpen, setIsDatePopoverOpen] = useState(false);
+  const [tempDateRange, setTempDateRange] = useState(dateRange);
 
-  const [refetch, { data, isLoading, isFetching }] = fetchFunc({
-    status,
-  });
+  const [refetch, { data, isLoading, isFetching }] = fetchFunc();
+  const [exportTrigger, { isLoading: isExporting }] = fetchFunc();
 
   const table = useReactTable({
     data: data?.data?.data || [],
@@ -66,14 +83,6 @@ export default function ManualDataFetchTable({
     },
   });
 
-  // useEffect(() => {
-  //   refetch({
-  //     search,
-  //     page: pagination.pageIndex + 1,
-  //     resultPerPage: pagination.pageSize,
-  //   });
-  // }, []);
-
   useEffect(() => {
     const timeOutId = setTimeout(() => {
       refetch({
@@ -81,50 +90,131 @@ export default function ManualDataFetchTable({
         page: pagination.pageIndex + 1,
         resultPerPage: pagination.pageSize,
         status,
+        startDate: dateRange[0].startDate
+          ? dateRange[0].startDate.toISOString()
+          : undefined,
+        endDate: dateRange[0].endDate
+          ? dateRange[0].endDate.toISOString()
+          : undefined,
       });
     }, 1000);
 
     return () => {
       clearTimeout(timeOutId);
     };
-  }, [pagination.pageIndex, pagination.pageSize, search]);
+  }, [pagination.pageIndex, pagination.pageSize, search, status]);
 
-  const selectedRows = table
-    .getSelectedRowModel()
-    .flatRows.map((row) => row.original);
+  const handleExport = async () => {
+    const result = await exportTrigger({
+      search,
+      status,
+      startDate: dateRange[0].startDate
+        ? dateRange[0].startDate.toISOString()
+        : undefined,
+      endDate: dateRange[0].endDate
+        ? dateRange[0].endDate.toISOString()
+        : undefined,
+      page: 1,
+      resultPerPage: 10000, // A large number to fetch all data
+    });
 
-  const handleExport = () => {
-    if (selectedRows.length === 0) {
-      toast.error("No rows selected");
-      return;
+    if (result.data?.data?.data?.length > 0) {
+      const allData = result.data.data.data;
+      const worksheet = XLSX.utils.json_to_sheet(allData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Data");
+
+      let fileName = "exported-data";
+      const start = dateRange[0].startDate;
+      const end = dateRange[0].endDate;
+
+      if (start && end) {
+        const formattedStart = start.toLocaleDateString("en-CA"); // YYYY-MM-DD
+        const formattedEnd = end.toLocaleDateString("en-CA");     // YYYY-MM-DD
+        if (formattedStart === formattedEnd) {
+          fileName = `data-${formattedStart}`;
+        } else {
+          fileName = `data-${formattedStart}_to_${formattedEnd}`;
+        }
+      } else {
+        fileName = "data-all-time";
+      }
+
+      XLSX.writeFile(workbook, `${fileName}.xlsx`);
+    } else {
+      toast.error("No data to export");
     }
-    const json = JSON.stringify(selectedRows, null, 2);
-    const blob = new Blob([json], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "package-data.json";
-    a.click();
-    URL.revokeObjectURL(url);
   };
 
-  // const handleDeleteSelected = () => {
-  //   if (selectedRows.length === 0) {
-  //     toast.error("No rows selected to delete");
-  //     return;
-  //   }
-  //   deleteSelected(selectedRows);
-  // };
+  const handleDateRangeApply = () => {
+    setDateRange(tempDateRange);
+    setIsDatePopoverOpen(false);
+    setPagination((prev) => ({ ...prev, pageIndex: 0 }));
+    refetch({
+      search,
+      page: 1, // pageIndex will be 0, so page is 1
+      resultPerPage: pagination.pageSize,
+      status,
+      startDate: tempDateRange[0].startDate
+        ? tempDateRange[0].startDate.toISOString()
+        : undefined,
+      endDate: tempDateRange[0].endDate
+        ? tempDateRange[0].endDate.toISOString()
+        : undefined,
+    });
+  };
+
+  const handleDateRangeCancel = () => {
+    setIsDatePopoverOpen(false);
+  };
+
+  const onPopoverOpenChange = (open) => {
+    if (open) {
+      setTempDateRange(dateRange);
+    }
+    setIsDatePopoverOpen(open);
+  };
 
   return (
     <div className="w-full">
-      <div className="flex items-center py-4">
+      <div className="flex items-center justify-between py-4">
         <Input
           placeholder={searchText || "Search across all fields..."}
           value={search ?? ""}
           onChange={(e) => setSearch(e.target.value)}
           className="max-w-sm"
         />
+        <div className="flex items-center gap-2">
+          <Popover open={isDatePopoverOpen} onOpenChange={onPopoverOpenChange}>
+            <PopoverTrigger asChild>
+              <Button>Select Date Range</Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0">
+              <div>
+                <DateRange
+                  editableDateInputs={true}
+                  onChange={(item) => setTempDateRange([item.selection])}
+                  moveRangeOnFirstSelection={false}
+                  ranges={tempDateRange}
+                />
+                <div className="flex justify-end gap-2 p-2">
+                  <Button
+                    variant="outline"
+                    onClick={handleDateRangeCancel}
+                  >
+                    Cancel
+                  </Button>
+                  <Button onClick={handleDateRangeApply}>
+                    Apply
+                  </Button>
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
+          <Button onClick={handleExport} disabled={isExporting}>
+            {isExporting ? "Exporting..." : "Export to Excel"}
+          </Button>
+        </div>
       </div>
       <div className="overflow-hidden rounded-md border">
         <Table>
@@ -138,7 +228,7 @@ export default function ManualDataFetchTable({
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
-                            header.getContext(),
+                            header.getContext()
                           )}
                     </TableHead>
                   );
@@ -166,7 +256,7 @@ export default function ManualDataFetchTable({
                     <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
-                        cell.getContext(),
+                        cell.getContext()
                       )}
                     </TableCell>
                   ))}
@@ -186,13 +276,10 @@ export default function ManualDataFetchTable({
         </Table>
       </div>
       <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="text-muted-foreground flex-1 text-sm">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.{" "}
-        </div>
+        <div className="flex-1 text-sm text-muted-foreground"></div>
         <div className="space-x-2">
           <div className="text-muted-foreground inline-block text-sm">
-            Total {table.getPageCount()} page(s)
+            Page {pagination.pageIndex + 1} of {data?.data?.totalPages ?? 0} page(s)
           </div>
           <Button
             variant="outline"
