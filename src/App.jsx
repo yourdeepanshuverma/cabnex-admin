@@ -31,6 +31,10 @@ const ActivityPackageDetails = lazy(
 const CreateProfiles = lazy(() => import("./pages/CreateProfiles"));
 const TravelQuery = lazy(() => import("./pages/TravelQuery"));
 const TravelQueryDetails = lazy(() => import("./pages/TravelQueryDetails"));
+const CustomItineraries = lazy(() => import("./pages/CustomItineraries"));
+const CustomItineraryDetails = lazy(
+  () => import("./pages/CustomItineraryDetails"),
+);
 
 const App = () => {
   return (
@@ -63,6 +67,11 @@ const App = () => {
         <Route path="/activity-packages" element={<ActivityPackages />} />
         <Route path="/travel-queries" element={<TravelQuery />} />
         <Route path="/travel-queries/:id" element={<TravelQueryDetails />} />
+        <Route path="/custom-itineraries" element={<CustomItineraries />} />
+        <Route
+          path="/custom-itineraries/:id"
+          element={<CustomItineraryDetails />}
+        />
         <Route
           path="/activity-packages/:id"
           element={<ActivityPackageDetails />}

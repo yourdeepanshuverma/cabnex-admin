@@ -24,6 +24,7 @@ export const adminApi = createApi({
     "UserStats",
     "VendorStats",
     "Transfers",
+    "Itinerary",
   ],
 
   endpoints: (builder) => ({
@@ -508,12 +509,36 @@ export const adminApi = createApi({
       }),
       providesTags: ["TravelQuery"],
     }),
+    getItineraries: builder.query({
+      query: (params) => ({
+        url: "/itinerary/itineraries",
+        params,
+      }),
+      providesTags: ["Itinerary"],
+    }),
+    getItineraryById: builder.query({
+      query: (id) => ({
+        url: `/itinerary/itineraries/${id}`,
+      }),
+      providesTags: ["Itinerary"],
+    }),
+    updateItineraryStatus: builder.mutation({
+      query: ({ id, status }) => ({
+        url: `/itinerary/itineraries/${id}/status`,
+        method: "PUT",
+        body: { status },
+      }),
+      invalidatesTags: ["Itinerary"],
+    }),
   }),
 });
 
 export const {
   useUpdateCityChargesMutation,
   useGetTravelQueryQuery,
+  useGetItinerariesQuery,
+  useGetItineraryByIdQuery,
+  useUpdateItineraryStatusMutation,
   useCreateUserMutation,
   useCreateVendorMutation,
   useUpdateActivityPackageMutation,
