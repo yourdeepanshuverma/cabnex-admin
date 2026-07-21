@@ -25,6 +25,7 @@ export const adminApi = createApi({
     "VendorStats",
     "Transfers",
     "Itinerary",
+    "HotelBookingQuery",
   ],
 
   endpoints: (builder) => ({
@@ -530,6 +531,34 @@ export const adminApi = createApi({
       }),
       invalidatesTags: ["Itinerary"],
     }),
+    getHotelBookingQueries: builder.query({
+      query: (params) => ({
+        url: "/hotel-booking/hotel-booking-queries",
+        params,
+      }),
+      providesTags: ["HotelBookingQuery"],
+    }),
+    getHotelBookingQueryById: builder.query({
+      query: (id) => ({
+        url: `/hotel-booking/hotel-booking-queries/${id}`,
+      }),
+      providesTags: ["HotelBookingQuery"],
+    }),
+    updateHotelBookingQueryStatus: builder.mutation({
+      query: ({ id, status }) => ({
+        url: `/hotel-booking/hotel-booking-queries/${id}/status`,
+        method: "PUT",
+        body: { status },
+      }),
+      invalidatesTags: ["HotelBookingQuery"],
+    }),
+    deleteHotelBookingQuery: builder.mutation({
+      query: (id) => ({
+        url: `/hotel-booking/hotel-booking-queries/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["HotelBookingQuery"],
+    }),
   }),
 });
 
@@ -539,6 +568,10 @@ export const {
   useGetItinerariesQuery,
   useGetItineraryByIdQuery,
   useUpdateItineraryStatusMutation,
+  useGetHotelBookingQueriesQuery,
+  useGetHotelBookingQueryByIdQuery,
+  useUpdateHotelBookingQueryStatusMutation,
+  useDeleteHotelBookingQueryMutation,
   useCreateUserMutation,
   useCreateVendorMutation,
   useUpdateActivityPackageMutation,

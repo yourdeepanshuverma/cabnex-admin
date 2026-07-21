@@ -7,6 +7,7 @@ import {
   User2Icon,
   PlusIcon,
   MapIcon,
+  HotelIcon,
 } from "lucide-react";
 
 const sidebarLinks = [
@@ -44,6 +45,11 @@ const sidebarLinks = [
     title: "Custom Itineraries",
     href: "/custom-itineraries",
     icon: MapIcon,
+  },
+  {
+    title: "Hotel Queries",
+    href: "/hotel-queries",
+    icon: HotelIcon,
   },
   {
     title: "Rental Packages",
