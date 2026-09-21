@@ -20,6 +20,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import Spinner from "@/components/ui/spinner";
 import {
   useAddNewCityMutation,
@@ -27,9 +34,50 @@ import {
 } from "@/store/services/adminApi";
 import { MoreHorizontalIcon, PlusIcon, MapPin } from "lucide-react";
 import PageHeader from "@/components/common/PageHeader";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router";
 import { toast } from "sonner";
+
+const INDIAN_STATES = [
+  "andhra-pradesh",
+  "arunachal-pradesh",
+  "assam",
+  "bihar",
+  "chhattisgarh",
+  "delhi",
+  "goa",
+  "gujarat",
+  "haryana",
+  "himachal-pradesh",
+  "jharkhand",
+  "karnataka",
+  "kerala",
+  "madhya-pradesh",
+  "maharashtra",
+  "manipur",
+  "meghalaya",
+  "mizoram",
+  "nagaland",
+  "odisha",
+  "puducherry",
+  "punjab",
+  "rajasthan",
+  "sikkim",
+  "tamil-nadu",
+  "telangana",
+  "tripura",
+  "uttar-pradesh",
+  "uttarakhand",
+  "west-bengal",
+];
+
+const formatStateName = (slug) => {
+  if (!slug) return "";
+  return slug
+    .split("-")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+};
 
 const City = () => {
   const { data, isLoading: loading } = useGetCitiesQuery();
@@ -102,23 +150,52 @@ const City = () => {
     return <Spinner />;
   }
 
+  const citiesList = data?.data?.cities || [];
+
   return (
     <div className="flex flex-1 flex-col">
       <PageHeader
         title="City Master"
         description="Manage operational service cities and local daily run limits (KM/Day)"
         icon={MapPin}
-        badge={`${data?.data?.cities?.length || 0} Cities Active`}
-        actions={<AddCityDialog />}
+        badge={`${citiesList.length} Cities Active`}
+        actions={<AddCityDialog cities={citiesList} />}
       />
-      <AutopaginateTable columns={columns} data={data?.data?.cities || []} />
+      <AutopaginateTable columns={columns} data={citiesList} />
     </div>
   );
 };
 
-const AddCityDialog = () => {
+const AddCityDialog = ({ cities = [] }) => {
   const [open, setOpen] = useState(false);
   const [addNewCity] = useAddNewCityMutation();
+
+  // Extract unique existing states currently configured in database
+  const existingStates = useMemo(() => {
+    const fromCities = cities
+      .map((c) => c.state?.toLowerCase().trim().replace(/\s+/g, "-"))
+      .filter(Boolean);
+    return Array.from(new Set(fromCities)).sort();
+  }, [cities]);
+
+  // Combined state list
+  const allStates = useMemo(() => {
+    return Array.from(new Set([...existingStates, ...INDIAN_STATES])).sort();
+  }, [existingStates]);
+
+  const [selectedState, setSelectedState] = useState("");
+  const [isCustomState, setIsCustomState] = useState(false);
+  const [customStateName, setCustomStateName] = useState("");
+
+  const handleOpenChange = (isOpen) => {
+    setOpen(isOpen);
+    if (isOpen && !selectedState) {
+      // Default to first existing state in DB or first Indian state
+      setSelectedState(existingStates[0] || INDIAN_STATES[0]);
+      setIsCustomState(false);
+      setCustomStateName("");
+    }
+  };
 
   const handleSave = async (e) => {
     e.preventDefault();
@@ -130,11 +207,21 @@ const AddCityDialog = () => {
       ?.trim()
       .toLowerCase()
       .replace(/\s+/g, "-");
-    const stateName = formData
-      .get("state")
-      ?.trim()
-      .toLowerCase()
-      .replace(/\s+/g, "-");
+
+    const stateName = isCustomState
+      ? customStateName.trim().toLowerCase().replace(/\s+/g, "-")
+      : selectedState;
+
+    if (!cityName) {
+      toast.error("Please enter a city name");
+      return;
+    }
+
+    if (!stateName) {
+      toast.error("Please select or enter a state");
+      return;
+    }
+
     const localKmPerDay = Number(formData.get("localKmPerDay")) || 100;
     const bufferKm = Number(formData.get("bufferKm")) || 0;
     const hillCharge = Number(formData.get("hillCharge")) || 0;
@@ -151,6 +238,8 @@ const AddCityDialog = () => {
         toast.success(res.message || "City added successfully");
         toast.success("Add more categories from city view");
         form.reset();
+        setIsCustomState(false);
+        setCustomStateName("");
         setOpen(false);
       })
       .catch((err) => {
@@ -159,7 +248,7 @@ const AddCityDialog = () => {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button variant="outline">
           <PlusIcon className="h-4 w-4 mr-1" /> Add City
@@ -176,7 +265,7 @@ const AddCityDialog = () => {
           <div className="grid gap-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="city">City Name</Label>
+                <Label htmlFor="city">City Name *</Label>
                 <Input
                   id="city"
                   name="city"
@@ -184,14 +273,82 @@ const AddCityDialog = () => {
                   required
                 />
               </div>
+
               <div className="space-y-2">
-                <Label htmlFor="state">State</Label>
-                <Input
-                  id="state"
-                  name="state"
-                  placeholder="e.g. Karnataka"
-                  required
-                />
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="state">State *</Label>
+                  {isCustomState && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsCustomState(false);
+                        setSelectedState(existingStates[0] || INDIAN_STATES[0]);
+                      }}
+                      className="text-[11px] text-primary hover:underline font-medium"
+                    >
+                      Choose existing
+                    </button>
+                  )}
+                </div>
+
+                {!isCustomState ? (
+                  <Select
+                    value={selectedState}
+                    onValueChange={(val) => {
+                      if (val === "__custom__") {
+                        setIsCustomState(true);
+                        setCustomStateName("");
+                      } else {
+                        setSelectedState(val);
+                      }
+                    }}
+                  >
+                    <SelectTrigger id="state">
+                      <SelectValue placeholder="Select existing state" />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-60">
+                      {existingStates.length > 0 && (
+                        <>
+                          <div className="px-2 py-1 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                            States in Your System
+                          </div>
+                          {existingStates.map((s) => (
+                            <SelectItem key={s} value={s}>
+                              {formatStateName(s)}
+                            </SelectItem>
+                          ))}
+                          <div className="my-1 border-t border-border" />
+                        </>
+                      )}
+                      <div className="px-2 py-1 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                        All Indian States
+                      </div>
+                      {allStates
+                        .filter((s) => !existingStates.includes(s))
+                        .map((s) => (
+                          <SelectItem key={s} value={s}>
+                            {formatStateName(s)}
+                          </SelectItem>
+                        ))}
+                      <div className="my-1 border-t border-border" />
+                      <SelectItem
+                        value="__custom__"
+                        className="text-primary font-medium"
+                      >
+                        + Enter New State...
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Input
+                    id="customState"
+                    value={customStateName}
+                    onChange={(e) => setCustomStateName(e.target.value)}
+                    placeholder="e.g. Goa"
+                    required
+                    autoFocus
+                  />
+                )}
               </div>
             </div>
 
