@@ -1,6 +1,5 @@
 import AutopaginateTable from "@/components/auto-paginate-table";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogClose,
@@ -29,20 +28,24 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import Spinner from "@/components/ui/spinner";
-import { Switch } from "@/components/ui/switch";
-import { Table, TableHead, TableHeader } from "@/components/ui/table";
 import {
   useAddTransferMutation,
   useGetAllTransfersQuery,
   useGetCarCategoriesQuery,
 } from "@/store/services/adminApi";
-import { Autocomplete, LoadScript } from "@react-google-maps/api";
-import { MoreHorizontalIcon, PlusIcon } from "lucide-react";
-import { useRef, useState } from "react";
+import { MoreHorizontalIcon, PlusIcon, ArrowLeftRight } from "lucide-react";
+import PageHeader from "@/components/common/PageHeader";
+import { useState } from "react";
 import { Link } from "react-router";
 import { toast } from "sonner";
 
-const libraries = ["places"];
+const TRANSFER_TYPES = [
+  { value: "airport", label: "Airport Transfer" },
+  { value: "train_station", label: "Railway Station Transfer" },
+  { value: "bus_station", label: "Bus Station Transfer" },
+  { value: "city_transfer", label: "City / Local Transfer" },
+  { value: "other", label: "Other" },
+];
 
 const Transfer = () => {
   const { data, isLoading: loading } = useGetAllTransfersQuery();
@@ -56,7 +59,7 @@ const Transfer = () => {
           to={`/transfers/${row.original._id}`}
           className="font-medium capitalize hover:underline"
         >
-          {row.getValue("name").split("-").join(" ")}
+          {row.getValue("name")?.split("-").join(" ")}
         </Link>
       ),
     },
@@ -65,7 +68,7 @@ const Transfer = () => {
       header: "City",
       cell: ({ row }) => (
         <div className="font-medium capitalize">
-          {row.getValue("city").split("-").join(" ")}
+          {row.getValue("city")?.split("-").join(" ")}
         </div>
       ),
     },
@@ -74,7 +77,25 @@ const Transfer = () => {
       header: "State",
       cell: ({ row }) => (
         <div className="capitalize">
-          {row.getValue("state").split("-").join(" ")}
+          {row.getValue("state")?.split("-").join(" ")}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "type",
+      header: "Type",
+      cell: ({ row }) => (
+        <span className="px-2 py-0.5 bg-muted rounded text-xs capitalize">
+          {row.getValue("type")?.replace(/_/g, " ")}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "distanceKm",
+      header: "Distance (KM)",
+      cell: ({ row }) => (
+        <div className="font-semibold">
+          {row.original.distanceKm || 0} KM
         </div>
       ),
     },
@@ -83,7 +104,7 @@ const Transfer = () => {
       header: "Categories",
       cell: ({ row }) => (
         <div className="capitalize">
-          {row.original.category.map((i) => i.type.category).join(", ")}
+          {row.original.category?.map((i) => i.type?.category).filter(Boolean).join(", ") || "None"}
         </div>
       ),
     },
@@ -103,21 +124,8 @@ const Transfer = () => {
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <Link to={`/transfers/${row.original._id}`}>
-                <DropdownMenuItem>View Details</DropdownMenuItem>
+                <DropdownMenuItem>View Transfer</DropdownMenuItem>
               </Link>
-              {/* <Dialog>
-                <DialogTrigger asChild>
-                  <button className="m-0 px-1 py-2 text-sm">
-                    Duplicate City
-                  </button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-lg">
-                  <DialogHeader>
-                    <DialogTitle>Duplicate City</DialogTitle>
-                    <DialogDescription></DialogDescription>
-                  </DialogHeader>
-                </DialogContent>
-              </Dialog> */}
             </DropdownMenuContent>
           </DropdownMenu>
         );
@@ -131,31 +139,24 @@ const Transfer = () => {
 
   return (
     <div className="flex flex-1 flex-col">
-      <div className="bg-chart-1 mb-4 flex items-center justify-between space-y-2 rounded-md px-4 py-2">
-        <h4 className="mb-0 scroll-m-20 text-left text-2xl font-bold text-balance">
-          Add Transfers
-        </h4>
-        <AddTransferDialog />
-      </div>
-      <AutopaginateTable columns={columns} data={data?.data || []} />
+      <PageHeader
+        title="Transfer Master"
+        description="Airport, Railway & point-to-point transfer route pricing with garage return KM"
+        icon={ArrowLeftRight}
+        badge={`${data?.data?.transfers?.length || 0} Transfers Configured`}
+        actions={<AddTransferDialog />}
+      />
+      <AutopaginateTable columns={columns} data={data?.data?.transfers || []} />
     </div>
   );
 };
 
 const AddTransferDialog = () => {
-  const autocompleteRef = useRef(null);
-  const [form, setForm] = useState({
-    name: "",
-    place_id: "",
-    type: "",
-    city: "",
-    state: "",
-  });
   const [open, setOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("");
-  const [isSelecting, setIsSelecting] = useState(false);
+  const [transferType, setTransferType] = useState("airport");
 
-  const [addNewTransfer, { isLoading }] = useAddTransferMutation();
+  const [addNewTransfer] = useAddTransferMutation();
 
   const { data: categories } = useGetCarCategoriesQuery(undefined, {
     selectFromResult: ({ data }) => ({
@@ -172,196 +173,210 @@ const AddTransferDialog = () => {
     const formData = new FormData(f);
     const data = Object.fromEntries(formData.entries());
 
+    const name = data.name?.trim().toLowerCase().replace(/\s+/g, "-");
+    const cityName = data.city?.trim().toLowerCase().replace(/\s+/g, "-");
+    const stateName = data.state?.trim().toLowerCase().replace(/\s+/g, "-");
+
     await addNewTransfer({
-      ...form,
+      name,
+      type: transferType,
+      city: cityName,
+      state: stateName,
+      distanceKm: Number(data.distanceKm) || 0,
+      garageReturnKm: Number(data.garageReturnKm) || 0,
       category: [
         {
           type: selectedCategory,
-          baseFare: Number(data.baseFare),
-          baseKm: Number(data.baseKm),
-          extrakmCharge: Number(data.extrakmCharge),
-          hillCharge: Number(data.hillCharge),
-          taxSlab: Number(data.taxSlab),
+          baseFare: Number(data.baseFare) || 0,
+          baseKm: Number(data.baseKm) || 20,
+          extraKmCharge: Number(data.extraKmCharge) || 15,
+          hillCharge: Number(data.hillCharge) || 0,
+          taxSlab: Number(data.taxSlab) || 5,
         },
       ],
     })
       .unwrap()
-      .then((data) => {
-        toast.success(data.message);
+      .then((res) => {
+        toast.success(res.message || "Transfer added successfully");
         f.reset();
-        setForm({ name: "", place_id: "", state: "", city: "", type: "" });
+        setSelectedCategory("");
         setOpen(false);
       })
       .catch((err) => {
-        toast.error(err?.data?.message || err.error);
+        toast.error(err?.data?.message || err.error || "Failed to add transfer");
       });
   };
 
-  // Google dropdown starts appearing — disable closing temporarily
-  const handleFocus = () => {
-    setIsSelecting(true);
-  };
-
-  const handlePlaceChanged = (e) => {
-    const place = autocompleteRef.current.getPlace();
-
-    if (!place?.address_components) return;
-
-    const isAirport =
-      place.types?.includes("airport") || /airport/i.test(place.name);
-
-    const type = isAirport
-      ? "airport"
-      : place.types?.includes("train_station")
-        ? "train_station"
-        : place.types?.includes("bus_station")
-          ? "bus_station"
-          : place.types?.includes("subway_station")
-            ? "subway_station"
-            : place.types?.includes("transit_station")
-              ? "transit_station"
-              : "other";
-
-    const cityName =
-      place.address_components.find((comp) => comp.types.includes("locality"))
-        ?.long_name ||
-      place.address_components.find((comp) =>
-        comp.types.includes("administrative_area_level_2"),
-      )?.long_name ||
-      place.address_components.find((comp) =>
-        comp.types.includes("administrative_area_level_1"),
-      )?.long_name;
-
-    const stateName = place.address_components.find((comp) =>
-      comp.types.includes("administrative_area_level_1"),
-    )?.long_name;
-
-    setForm({
-      name: place.name,
-      place_id: place.place_id,
-      type: type,
-      city: cityName,
-      state: stateName,
-    });
-    setIsSelecting(false);
-  };
-
   return (
-    <LoadScript
-      googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
-      libraries={libraries}
-    >
-      <Dialog
-        open={open}
-        onOpenChange={(v) => {
-          if (!isSelecting) setOpen(v);
-        }}
-      >
-        <DialogTrigger asChild>
-          <Button variant="outline">
-            <PlusIcon className="h-4 w-4" />
-          </Button>
-        </DialogTrigger>
-        <DialogContent showCloseButton={false} className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Add City</DialogTitle>
-            <DialogDescription></DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleSave} className="space-y-4">
-            <div className="grid gap-4">
-              <div className="space-y-2">
-                <Label>Place</Label>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline">
+          <PlusIcon className="h-4 w-4 mr-1" /> Add Transfer
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Add Transfer Route</DialogTitle>
+          <DialogDescription>
+            Register fixed transfer route with static distance and pricing.
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSave} className="space-y-4">
+          <div className="grid gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="transferName">Transfer Name</Label>
+              <Input
+                id="transferName"
+                name="name"
+                placeholder="e.g. Airport Transfer"
+                required
+              />
+            </div>
 
-                <div
-                  onPointerDownCapture={(e) => e.stopPropagation()}
-                  onTouchStartCapture={(e) => e.stopPropagation()}
-                >
-                  <Autocomplete
-                    onLoad={(ref) => (autocompleteRef.current = ref)}
-                    onPlaceChanged={handlePlaceChanged}
-                    options={{
-                      componentRestrictions: { country: "IN" },
-                      types: ["transit_station"],
-                    }}
-                  >
-                    <input
-                      type="text"
-                      placeholder="Search for a location"
-                      className="w-full rounded-md border p-3"
-                      onFocus={handleFocus}
-                      onBlurCapture={() => setIsSelecting(false)}
-                      required
-                    />
-                  </Autocomplete>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4 space-y-2">
-                <div>
-                  <Label>City</Label>
-                  <Input disabled value={form.city} />
-                </div>
-                <div>
-                  <Label>State</Label>
-                  <Input disabled value={form.state} />
-                </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="transferCity">City</Label>
+                <Input
+                  id="transferCity"
+                  name="city"
+                  placeholder="e.g. Bangalore"
+                  required
+                />
               </div>
               <div className="space-y-2">
-                <Label>Select Category</Label>
-                <Select
+                <Label htmlFor="transferState">State</Label>
+                <Input
+                  id="transferState"
+                  name="state"
+                  placeholder="e.g. Karnataka"
                   required
-                  name="categoryId"
-                  value={selectedCategory}
-                  onValueChange={(val) => setSelectedCategory(val)}
-                >
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Transfer Type</Label>
+                <Select value={transferType} onValueChange={setTransferType}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Choose category" />
+                    <SelectValue placeholder="Select type" />
                   </SelectTrigger>
                   <SelectContent>
-                    {categories?.map((i) => (
-                      <SelectItem key={i._id} value={i._id}>
-                        {i.category}
+                    {TRANSFER_TYPES.map((t) => (
+                      <SelectItem key={t.value} value={t.value}>
+                        {t.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-              <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
-                {[
-                  "baseFare",
-                  "baseKm",
-                  "extraKmCharge",
-                  "hillCharge",
-                  "taxSlab",
-                ].map((key) => (
-                  <div key={key} className="grid gap-2">
-                    <Label htmlFor={key} className="capitalize">
-                      {key.replace(/([A-Z])/g, " $1")}
-                    </Label>
-                    <Input
-                      id={key}
-                      name={key}
-                      type="number"
-                      placeholder={0}
-                      required
-                    />
-                  </div>
-                ))}
+
+              <div className="space-y-2">
+                <Label htmlFor="distanceKm">Static Distance (KM)</Label>
+                <Input
+                  id="distanceKm"
+                  name="distanceKm"
+                  type="number"
+                  placeholder="e.g. 40"
+                  required
+                  min={0}
+                />
               </div>
             </div>
-            <DialogFooter>
-              <DialogClose asChild>
-                <Button variant="outline" disabled={isLoading}>
-                  Cancel
-                </Button>
-              </DialogClose>
-              <Button type="submit" disabled={isLoading}>
-                {isLoading ? <Spinner /> : "Save"}
+
+            <div className="space-y-2">
+              <Label>Select Initial Car Category</Label>
+              <Select
+                required
+                value={selectedCategory}
+                onValueChange={(val) => setSelectedCategory(val)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories?.map((i) => (
+                    <SelectItem key={i._id} value={i._id} className="capitalize">
+                      {i.category?.replace(/-/g, " ")}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid grid-cols-3 gap-3">
+              <div className="space-y-1">
+                <Label htmlFor="baseFare">Base Fare (₹)</Label>
+                <Input
+                  id="baseFare"
+                  name="baseFare"
+                  type="number"
+                  placeholder="1500"
+                  required
+                  min={0}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="baseKm">Base KM</Label>
+                <Input
+                  id="baseKm"
+                  name="baseKm"
+                  type="number"
+                  placeholder="20"
+                  defaultValue={20}
+                  required
+                  min={0}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="extraKmCharge">Extra/KM (₹)</Label>
+                <Input
+                  id="extraKmCharge"
+                  name="extraKmCharge"
+                  type="number"
+                  placeholder="15"
+                  defaultValue={15}
+                  required
+                  min={0}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <Label htmlFor="hillCharge">Hill Charge (₹)</Label>
+                <Input
+                  id="hillCharge"
+                  name="hillCharge"
+                  type="number"
+                  placeholder="0"
+                  defaultValue={0}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="taxSlab">Tax Slab (%)</Label>
+                <Input
+                  id="taxSlab"
+                  name="taxSlab"
+                  type="number"
+                  placeholder="5"
+                  defaultValue={5}
+                />
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline" type="button">
+                Cancel
               </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-    </LoadScript>
+            </DialogClose>
+            <Button type="submit">Save Transfer</Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 };
 

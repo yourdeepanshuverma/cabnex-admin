@@ -25,13 +25,11 @@ import {
   useAddNewCityMutation,
   useGetCitiesQuery,
 } from "@/store/services/adminApi";
-import { Autocomplete, LoadScript } from "@react-google-maps/api";
-import { MoreHorizontalIcon, PlusIcon } from "lucide-react";
-import { useRef, useState } from "react";
+import { MoreHorizontalIcon, PlusIcon, MapPin } from "lucide-react";
+import PageHeader from "@/components/common/PageHeader";
+import { useState } from "react";
 import { Link } from "react-router";
 import { toast } from "sonner";
-
-const libraries = ["places"];
 
 const City = () => {
   const { data, isLoading: loading } = useGetCitiesQuery();
@@ -42,7 +40,7 @@ const City = () => {
       header: "City",
       cell: ({ row }) => (
         <div className="font-medium capitalize">
-          {row.getValue("city").split("-").join(" ")}
+          {row.getValue("city")?.split("-").join(" ")}
         </div>
       ),
     },
@@ -51,7 +49,18 @@ const City = () => {
       header: "State",
       cell: ({ row }) => (
         <div className="capitalize">
-          {row.getValue("state").split("-").join(" ")}
+          {row.getValue("state")?.split("-").join(" ") || "-"}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "localKmPerDay",
+      header: "Local KM / Day",
+      cell: ({ row }) => (
+        <div className="font-medium">
+          {row.original.localKmPerDay !== undefined
+            ? `${row.original.localKmPerDay} KM`
+            : "100 KM"}
         </div>
       ),
     },
@@ -60,7 +69,7 @@ const City = () => {
       header: "Categories",
       cell: ({ row }) => (
         <div className="capitalize">
-          {row.original.category.map((i) => i.type.category).join(", ")}
+          {row.original.category?.map((i) => i.type?.category).filter(Boolean).join(", ") || "None"}
         </div>
       ),
     },
@@ -95,182 +104,147 @@ const City = () => {
 
   return (
     <div className="flex flex-1 flex-col">
-      <div className="bg-chart-1 mb-4 flex items-center justify-between space-y-2 rounded-md px-4 py-2">
-        <h4 className="mb-0 scroll-m-20 text-left text-2xl font-bold text-balance">
-          Add City
-        </h4>
-        <AddCityDialog />
-      </div>
+      <PageHeader
+        title="City Master"
+        description="Manage operational service cities and local daily run limits (KM/Day)"
+        icon={MapPin}
+        badge={`${data?.data?.cities?.length || 0} Cities Active`}
+        actions={<AddCityDialog />}
+      />
       <AutopaginateTable columns={columns} data={data?.data?.cities || []} />
     </div>
   );
 };
 
 const AddCityDialog = () => {
-  const autocompleteRef = useRef(null);
-  const [city, setCity] = useState({
-    name: "",
-    place_id: "",
-    state: "",
-  });
   const [open, setOpen] = useState(false);
-  const [isSelecting, setIsSelecting] = useState(false);
-
   const [addNewCity] = useAddNewCityMutation();
 
   const handleSave = async (e) => {
     e.preventDefault();
-
     const form = e.target;
     const formData = new FormData(form);
-    const data = Object.fromEntries(formData.entries());
+
+    const cityName = formData
+      .get("city")
+      ?.trim()
+      .toLowerCase()
+      .replace(/\s+/g, "-");
+    const stateName = formData
+      .get("state")
+      ?.trim()
+      .toLowerCase()
+      .replace(/\s+/g, "-");
+    const localKmPerDay = Number(formData.get("localKmPerDay")) || 100;
+    const bufferKm = Number(formData.get("bufferKm")) || 0;
+    const hillCharge = Number(formData.get("hillCharge")) || 0;
 
     await addNewCity({
-      city: city.name,
-      place_id: city.place_id,
-      state: city.state,
-      bufferKm: data.bufferKm,
-      hillCharge: data.hillCharge,
+      city: cityName,
+      state: stateName,
+      localKmPerDay,
+      bufferKm,
+      hillCharge,
     })
       .unwrap()
-      .then((data) => {
-        toast.success(data.message);
+      .then((res) => {
+        toast.success(res.message || "City added successfully");
         toast.success("Add more categories from city view");
         form.reset();
-        setCity({ name: "", place_id: "", state: "" });
         setOpen(false);
       })
       .catch((err) => {
-        toast.error(err?.data?.message || err.error);
+        toast.error(err?.data?.message || err.error || "Failed to add city");
       });
   };
 
-  const handlePlaceChanged = (e) => {
-    const place = autocompleteRef.current.getPlace();
-
-    if (!place?.address_components) return;
-
-    // Extract the city name only
-    const cityComponent =
-      place.address_components.find((comp) =>
-        comp.types.includes("locality"),
-      ) ||
-      place.address_components.find((comp) =>
-        comp.types.includes("administrative_area_level_2"),
-      ) ||
-      place.address_components.find((comp) =>
-        comp.types.includes("administrative_area_level_1"),
-      );
-
-    const cityName = cityComponent ? cityComponent.long_name : place.name;
-
-    const stateName = place.address_components.find((comp) =>
-      comp.types.includes("administrative_area_level_1"),
-    ).long_name;
-
-    setCity({
-      name: cityName,
-      place_id: place.place_id,
-      state: stateName,
-    });
-    setIsSelecting(false);
-  };
-
-  // Google dropdown starts appearing — disable closing temporarily
-  const handleFocus = () => {
-    setIsSelecting(true);
-  };
-
   return (
-    <LoadScript
-      googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
-      libraries={libraries}
-    >
-      <Dialog
-        open={open}
-        onOpenChange={(v) => {
-          if (!isSelecting) setOpen(v);
-        }}
-      >
-        <DialogTrigger asChild>
-          <Button variant="outline">
-            <PlusIcon className="h-4 w-4" />
-          </Button>
-        </DialogTrigger>
-        <DialogContent showCloseButton={false} className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Add City</DialogTitle>
-            <DialogDescription></DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleSave} className="space-y-4">
-            <div className="grid gap-4">
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline">
+          <PlusIcon className="h-4 w-4 mr-1" /> Add City
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Add City</DialogTitle>
+          <DialogDescription>
+            Register a new city and set its local daily KM limit.
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSave} className="space-y-4">
+          <div className="grid gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="city">City</Label>
-
-                <div
-                  onPointerDownCapture={(e) => e.stopPropagation()}
-                  onTouchStartCapture={(e) => e.stopPropagation()}
-                >
-                  <Autocomplete
-                    onLoad={(ref) => (autocompleteRef.current = ref)}
-                    onPlaceChanged={handlePlaceChanged}
-                    options={{
-                      componentRestrictions: { country: "IN" },
-                      types: ["(cities)"],
-                    }}
-                  >
-                    <input
-                      type="text"
-                      placeholder="Search for a location"
-                      className="w-full rounded-md border p-3"
-                      onFocus={handleFocus}
-                      onBlurCapture={() => setIsSelecting(false)}
-                      id="city"
-                      name="city"
-                      required
-                    />
-                  </Autocomplete>
-                </div>
+                <Label htmlFor="city">City Name</Label>
+                <Input
+                  id="city"
+                  name="city"
+                  placeholder="e.g. Bangalore"
+                  required
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="state">State</Label>
                 <Input
                   id="state"
                   name="state"
-                  placeholder="Enter state name"
-                  disabled
-                  value={city.state}
+                  placeholder="e.g. Karnataka"
+                  required
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="bufferKm">Bffer km</Label>
-                  <Input
-                    id="bufferKm"
-                    name="bufferKm"
-                    placeholder="Enter buffer km"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="hillCharge">Hill Charge</Label>
-                  <Input
-                    id="hillCharge"
-                    name="hillCharge"
-                    placeholder="Enter hill charge"
-                  />
-                </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="localKmPerDay">Local KM Per Day</Label>
+              <Input
+                id="localKmPerDay"
+                name="localKmPerDay"
+                type="number"
+                defaultValue={100}
+                placeholder="e.g. 100"
+                min={0}
+                required
+              />
+              <p className="text-xs text-muted-foreground">
+                Daily local distance allowance for multicity local stays
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="bufferKm">Buffer KM</Label>
+                <Input
+                  id="bufferKm"
+                  name="bufferKm"
+                  type="number"
+                  placeholder="e.g. 10"
+                  defaultValue={0}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="hillCharge">Hill Charge (₹)</Label>
+                <Input
+                  id="hillCharge"
+                  name="hillCharge"
+                  type="number"
+                  placeholder="e.g. 500"
+                  defaultValue={0}
+                />
               </div>
             </div>
-            <DialogFooter>
-              <DialogClose asChild>
-                <Button variant="outline">Cancel</Button>
-              </DialogClose>
-              <Button type="submit">Save</Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-    </LoadScript>
+          </div>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline" type="button">
+                Cancel
+              </Button>
+            </DialogClose>
+            <Button type="submit">Save City</Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 };
 

@@ -17,7 +17,8 @@ import {
   useGetCarCategoriesQuery,
   useUpdateCarCategoryMutation,
 } from "@/store/services/adminApi";
-import { Loader2Icon, MoreHorizontalIcon, PlusIcon } from "lucide-react";
+import { Loader2Icon, MoreHorizontalIcon, PlusIcon, Layers } from "lucide-react";
+import PageHeader from "@/components/common/PageHeader";
 import { Link } from "react-router";
 import { toast } from "sonner";
 
@@ -169,20 +170,23 @@ const CarCategories = () => {
 
   return !isLoading ? (
     <div className="flex flex-1 flex-col">
-      <div className="bg-chart-1 mb-4 flex items-center justify-between space-y-2 rounded-md px-4 py-2">
-        <h4 className="mb-0 scroll-m-20 text-left text-2xl font-bold text-balance">
-          Add Car Category
-        </h4>
-        <CarCategoryDialog
-          title="Add Car Category"
-          className="cursor-pointer"
-          onSave={handleSave}
-        >
-          <Button variant="outline">
-            <PlusIcon />
-          </Button>
-        </CarCategoryDialog>
-      </div>
+      <PageHeader
+        title="Car Categories"
+        description="Vehicle classes, seating capacities, and luggage limits"
+        icon={Layers}
+        badge={`${data?.data?.categories?.length || 0} Categories`}
+        actions={
+          <CarCategoryDialog
+            title="Add Car Category"
+            className="cursor-pointer"
+            onSave={handleSave}
+          >
+            <Button className="shadow-xs">
+              <PlusIcon className="h-4 w-4 mr-1.5" /> Add Category
+            </Button>
+          </CarCategoryDialog>
+        }
+      />
       <AutopaginateTable
         columns={columns}
         data={data?.data?.categories || []}

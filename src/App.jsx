@@ -36,6 +36,14 @@ const CustomItineraryDetails = lazy(
   () => import("./pages/CustomItineraryDetails"),
 );
 const HotelQueries = lazy(() => import("./pages/HotelQueries"));
+const RouteMaster = lazy(() => import("./pages/RouteMaster"));
+const RateMaster = lazy(() => import("./pages/RateMaster"));
+const ChargeMaster = lazy(() => import("./pages/ChargeMaster"));
+const PermitMaster = lazy(() => import("./pages/PermitMaster"));
+const StateMarkupMaster = lazy(() => import("./pages/StateMarkupMaster"));
+const SurchargeMaster = lazy(() => import("./pages/SurchargeMaster"));
+const AgentGradeMaster = lazy(() => import("./pages/AgentGradeMaster"));
+const GarageMaster = lazy(() => import("./pages/GarageMaster"));
 
 const App = () => {
   return (
@@ -65,6 +73,14 @@ const App = () => {
         <Route path="/rental-packages" element={<RentalPackages />} />
         <Route path="/transfers" element={<Transfer />} />
         <Route path="/transfers/:id" element={<TransferView />} />
+        <Route path="/route-master" element={<RouteMaster />} />
+        <Route path="/rate-master" element={<RateMaster />} />
+        <Route path="/charge-master" element={<ChargeMaster />} />
+        <Route path="/permit-master" element={<PermitMaster />} />
+        <Route path="/state-markups" element={<StateMarkupMaster />} />
+        <Route path="/surcharge-master" element={<SurchargeMaster />} />
+        <Route path="/agent-grades" element={<AgentGradeMaster />} />
+        <Route path="/garage-master" element={<GarageMaster />} />
         <Route path="/activity-packages" element={<ActivityPackages />} />
         <Route path="/travel-queries" element={<TravelQuery />} />
         <Route path="/travel-queries/:id" element={<TravelQueryDetails />} />

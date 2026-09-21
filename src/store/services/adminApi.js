@@ -26,6 +26,14 @@ export const adminApi = createApi({
     "Transfers",
     "Itinerary",
     "HotelBookingQuery",
+    "Route",
+    "RateMaster",
+    "ChargeMaster",
+    "SurchargeMaster",
+    "AgentGrade",
+    "Garage",
+    "StatePermit",
+    "StateMarkup",
   ],
 
   endpoints: (builder) => ({
@@ -559,6 +567,270 @@ export const adminApi = createApi({
       }),
       invalidatesTags: ["HotelBookingQuery"],
     }),
+
+    // ─── Route Master (KM Master) ───
+    getAllRoutes: builder.query({
+      query: (params) => ({
+        url: "/master/routes",
+        params,
+      }),
+      providesTags: ["Route"],
+    }),
+    createRoute: builder.mutation({
+      query: (data) => ({
+        url: "/master/routes",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["Route"],
+    }),
+    updateRoute: builder.mutation({
+      query: ({ id, ...data }) => ({
+        url: `/master/routes/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["Route"],
+    }),
+    deleteRoute: builder.mutation({
+      query: (id) => ({
+        url: `/master/routes/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Route"],
+    }),
+
+    // ─── Rate Master ───
+    getAllRates: builder.query({
+      query: (params) => ({
+        url: "/master/rate-master",
+        params,
+      }),
+      providesTags: ["RateMaster"],
+    }),
+    createRate: builder.mutation({
+      query: (data) => ({
+        url: "/master/rate-master",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["RateMaster"],
+    }),
+    updateRate: builder.mutation({
+      query: ({ id, ...data }) => ({
+        url: `/master/rate-master/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["RateMaster"],
+    }),
+    deleteRate: builder.mutation({
+      query: (id) => ({
+        url: `/master/rate-master/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["RateMaster"],
+    }),
+
+    // ─── Charge Master ───
+    getAllCharges: builder.query({
+      query: () => ({
+        url: "/master/charge-master",
+      }),
+      providesTags: ["ChargeMaster"],
+    }),
+    createCharge: builder.mutation({
+      query: (data) => ({
+        url: "/master/charge-master",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["ChargeMaster"],
+    }),
+    updateCharge: builder.mutation({
+      query: ({ id, ...data }) => ({
+        url: `/master/charge-master/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["ChargeMaster"],
+    }),
+    deleteCharge: builder.mutation({
+      query: (id) => ({
+        url: `/master/charge-master/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["ChargeMaster"],
+    }),
+
+    // ─── Surcharge Master ───
+    getAllSurcharges: builder.query({
+      query: () => ({
+        url: "/master/surcharge-master",
+      }),
+      providesTags: ["SurchargeMaster"],
+    }),
+    createSurcharge: builder.mutation({
+      query: (data) => ({
+        url: "/master/surcharge-master",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["SurchargeMaster"],
+    }),
+    updateSurcharge: builder.mutation({
+      query: ({ id, ...data }) => ({
+        url: `/master/surcharge-master/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["SurchargeMaster"],
+    }),
+    deleteSurcharge: builder.mutation({
+      query: (id) => ({
+        url: `/master/surcharge-master/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["SurchargeMaster"],
+    }),
+
+    // ─── Agent Grades ───
+    getAllAgentGrades: builder.query({
+      query: () => ({
+        url: "/master/agent-grades",
+      }),
+      providesTags: ["AgentGrade"],
+    }),
+    createAgentGrade: builder.mutation({
+      query: (data) => ({
+        url: "/master/agent-grades",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["AgentGrade"],
+    }),
+    updateAgentGrade: builder.mutation({
+      query: ({ id, ...data }) => ({
+        url: `/master/agent-grades/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["AgentGrade"],
+    }),
+    deleteAgentGrade: builder.mutation({
+      query: (id) => ({
+        url: `/master/agent-grades/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["AgentGrade"],
+    }),
+
+    // ─── Garage Master ───
+    getAllGarages: builder.query({
+      query: () => ({
+        url: "/master/garages",
+      }),
+      providesTags: ["Garage"],
+    }),
+    createGarage: builder.mutation({
+      query: (data) => ({
+        url: "/master/garages",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["Garage"],
+    }),
+    updateGarage: builder.mutation({
+      query: ({ id, ...data }) => ({
+        url: `/master/garages/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["Garage"],
+    }),
+    deleteGarage: builder.mutation({
+      query: (id) => ({
+        url: `/master/garages/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Garage"],
+    }),
+
+    // ─── State Permit Master ───
+    getAllStatePermits: builder.query({
+      query: () => ({
+        url: "/master/state-permits",
+      }),
+      providesTags: ["StatePermit"],
+    }),
+    createStatePermit: builder.mutation({
+      query: (data) => ({
+        url: "/master/state-permits",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["StatePermit"],
+    }),
+    updateStatePermit: builder.mutation({
+      query: ({ id, ...data }) => ({
+        url: `/master/state-permits/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["StatePermit"],
+    }),
+    deleteStatePermit: builder.mutation({
+      query: (id) => ({
+        url: `/master/state-permits/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["StatePermit"],
+    }),
+
+    // ─── State Markup Master ───
+    getAllStateMarkups: builder.query({
+      query: () => ({
+        url: "/master/state-markups",
+      }),
+      providesTags: ["StateMarkup"],
+    }),
+    createStateMarkup: builder.mutation({
+      query: (data) => ({
+        url: "/master/state-markups",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["StateMarkup"],
+    }),
+    updateStateMarkup: builder.mutation({
+      query: ({ id, ...data }) => ({
+        url: `/master/state-markups/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["StateMarkup"],
+    }),
+    deleteStateMarkup: builder.mutation({
+      query: (id) => ({
+        url: `/master/state-markups/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["StateMarkup"],
+    }),
+    getDefaultCommission: builder.query({
+      query: () => ({
+        url: "/master/state-markups/default-commission",
+      }),
+      providesTags: ["StateMarkup", "WebsiteSettings"],
+    }),
+    updateDefaultCommission: builder.mutation({
+      query: (data) => ({
+        url: "/master/state-markups/default-commission",
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["StateMarkup", "WebsiteSettings"],
+    }),
   }),
 });
 
@@ -626,4 +898,46 @@ export const {
   useAdminLogoutMutation,
   useGetAllTravelPackagesQuery,
   useUpdateCategoryFromCityMutation,
+  // Route Master
+  useGetAllRoutesQuery,
+  useCreateRouteMutation,
+  useUpdateRouteMutation,
+  useDeleteRouteMutation,
+  // Rate Master
+  useGetAllRatesQuery,
+  useCreateRateMutation,
+  useUpdateRateMutation,
+  useDeleteRateMutation,
+  // Charge Master
+  useGetAllChargesQuery,
+  useCreateChargeMutation,
+  useUpdateChargeMutation,
+  useDeleteChargeMutation,
+  // Surcharge Master
+  useGetAllSurchargesQuery,
+  useCreateSurchargeMutation,
+  useUpdateSurchargeMutation,
+  useDeleteSurchargeMutation,
+  // Agent Grade
+  useGetAllAgentGradesQuery,
+  useCreateAgentGradeMutation,
+  useUpdateAgentGradeMutation,
+  useDeleteAgentGradeMutation,
+  // Garage Master
+  useGetAllGaragesQuery,
+  useCreateGarageMutation,
+  useUpdateGarageMutation,
+  useDeleteGarageMutation,
+  // State Permit Master
+  useGetAllStatePermitsQuery,
+  useCreateStatePermitMutation,
+  useUpdateStatePermitMutation,
+  useDeleteStatePermitMutation,
+  // State Markup Master
+  useGetAllStateMarkupsQuery,
+  useCreateStateMarkupMutation,
+  useUpdateStateMarkupMutation,
+  useDeleteStateMarkupMutation,
+  useGetDefaultCommissionQuery,
+  useUpdateDefaultCommissionMutation,
 } = adminApi;
