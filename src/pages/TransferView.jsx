@@ -42,6 +42,22 @@ import { useState } from "react";
 import { useParams } from "react-router";
 import { toast } from "sonner";
 
+const FARE_LABELS = {
+  baseFare: "Base Fare (₹)",
+  baseKm: "Included Base KM",
+  extraKmCharge: "Extra KM Rate (₹/km)",
+  hillCharge: "Hill Charge (₹)",
+  taxSlab: "Tax Slab (%)",
+};
+
+const FARE_HINTS = {
+  baseFare: "Flat price for included KM",
+  baseKm: "KM covered by base fare",
+  extraKmCharge: "Rate for distance above Base KM",
+  hillCharge: "Flat hill charge if applicable",
+  taxSlab: "Tax percentage",
+};
+
 export default function TransferView() {
   const { id } = useParams();
 
@@ -55,9 +71,14 @@ export default function TransferView() {
   });
 
   const { data: transfer } = useGetAllTransfersQuery(undefined, {
-    selectFromResult: ({ data }) => ({
-      data: data?.data?.find((i) => i._id === id),
-    }),
+    selectFromResult: ({ data }) => {
+      const list = Array.isArray(data?.data)
+        ? data.data
+        : data?.data?.transfers || [];
+      return {
+        data: list.find((i) => i._id === id),
+      };
+    },
   });
 
   const { data: categories } = useGetCarCategoriesQuery(undefined, {
@@ -158,12 +179,37 @@ export default function TransferView() {
 
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-semibold capitalize">{transfer?.name}</h1>
+        <h1 className="text-2xl font-semibold capitalize">{transfer?.name?.replace(/-/g, " ")}</h1>
         <p className="text-muted-foreground capitalize">
-          {transfer?.city.split("-").join(" ")}
+          {transfer?.city?.replace(/-/g, " ")}
           {", "}
-          {transfer?.state.split("-").join(" ")}
+          {transfer?.state?.replace(/-/g, " ")}
         </p>
+      </div>
+
+      {/* Route Info & Pricing Logic Explanation */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 rounded-xl border border-orange-200 bg-orange-50/60 text-xs">
+        <div>
+          <span className="text-muted-foreground block text-[11px]">Total Route Distance</span>
+          <span className="font-bold text-base text-orange-950">{transfer?.distanceKm || 0} KM</span>
+        </div>
+        <div>
+          <span className="text-muted-foreground block text-[11px]">Location</span>
+          <span className="font-semibold text-sm capitalize text-slate-800">
+            {transfer?.city?.replace(/-/g, " ")}, {transfer?.state?.replace(/-/g, " ")}
+          </span>
+        </div>
+        <div>
+          <span className="text-muted-foreground block text-[11px]">Transfer Type</span>
+          <span className="font-semibold text-sm capitalize text-slate-800">
+            {transfer?.type?.replace(/_/g, " ")}
+          </span>
+        </div>
+        <div className="text-[11px] text-slate-700 md:border-l md:pl-4 border-orange-200">
+          <strong className="text-orange-900">How Pricing Works:</strong>
+          <br />
+          If Route ({transfer?.distanceKm || 0} KM) &gt; Included Base KM, remaining distance is billed at Extra KM Rate.
+        </div>
       </div>
 
       <Separator />
@@ -175,11 +221,11 @@ export default function TransferView() {
             <TableRow>
               <TableHead className="w-[60px]">Image</TableHead>
               <TableHead>Category</TableHead>
-              <TableHead>Base Fare</TableHead>
-              <TableHead>Base Km</TableHead>
-              <TableHead>Extra Km Charge</TableHead>
-              <TableHead>Hill Charge</TableHead>
-              <TableHead>Tax Slab</TableHead>
+              <TableHead>Base Fare (₹)</TableHead>
+              <TableHead>Included Base KM</TableHead>
+              <TableHead>Extra KM Rate (₹/km)</TableHead>
+              <TableHead>Hill Charge (₹)</TableHead>
+              <TableHead>Tax Slab (%)</TableHead>
               <TableHead className="text-right">Actions</TableHead>
               <TableHead className="text-center">Visibility</TableHead>
             </TableRow>
@@ -238,9 +284,9 @@ export default function TransferView() {
                         >
                           <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
                             {Object.keys(fareDetails).map((key) => (
-                              <div key={key}>
-                                <Label htmlFor={`name-${key}`}>
-                                  {key.replace(/([A-Z])/g, " $1")}
+                              <div key={key} className="space-y-1">
+                                <Label htmlFor={`name-${key}`} className="text-xs font-semibold">
+                                  {FARE_LABELS[key] || key}
                                 </Label>
                                 <Input
                                   id={`name-${key}`}
@@ -248,6 +294,9 @@ export default function TransferView() {
                                   type="number"
                                   defaultValue={cat[key]}
                                 />
+                                <p className="text-[10px] text-muted-foreground">
+                                  {FARE_HINTS[key]}
+                                </p>
                               </div>
                             ))}
                           </div>
@@ -318,9 +367,9 @@ export default function TransferView() {
           {/* Fare fields */}
           <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
             {Object.keys(fareDetails).map((key) => (
-              <div key={key}>
-                <Label className="capitalize">
-                  {key.replace(/([A-Z])/g, " $1")}
+              <div key={key} className="space-y-1">
+                <Label className="text-xs font-semibold">
+                  {FARE_LABELS[key] || key}
                 </Label>
                 <Input
                   type="number"
@@ -330,6 +379,9 @@ export default function TransferView() {
                   }
                   placeholder="Enter value"
                 />
+                <p className="text-[10px] text-muted-foreground">
+                  {FARE_HINTS[key]}
+                </p>
               </div>
             ))}
           </div>

@@ -32,8 +32,9 @@ import {
   useAddTransferMutation,
   useGetAllTransfersQuery,
   useGetCarCategoriesQuery,
+  useGetCitiesQuery,
 } from "@/store/services/adminApi";
-import { MoreHorizontalIcon, PlusIcon, ArrowLeftRight } from "lucide-react";
+import { MoreHorizontalIcon, PlusIcon, ArrowLeftRight, Info } from "lucide-react";
 import PageHeader from "@/components/common/PageHeader";
 import { useState } from "react";
 import { Link } from "react-router";
@@ -137,16 +138,20 @@ const Transfer = () => {
     return <Spinner />;
   }
 
+  const transfersList = Array.isArray(data?.data)
+    ? data.data
+    : data?.data?.transfers || [];
+
   return (
     <div className="flex flex-1 flex-col">
       <PageHeader
         title="Transfer Master"
         description="Airport, Railway & point-to-point transfer route pricing with garage return KM"
         icon={ArrowLeftRight}
-        badge={`${data?.data?.transfers?.length || 0} Transfers Configured`}
+        badge={`${transfersList.length} Transfers Configured`}
         actions={<AddTransferDialog />}
       />
-      <AutopaginateTable columns={columns} data={data?.data?.transfers || []} />
+      <AutopaginateTable columns={columns} data={transfersList} />
     </div>
   );
 };
@@ -154,9 +159,34 @@ const Transfer = () => {
 const AddTransferDialog = () => {
   const [open, setOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedCityId, setSelectedCityId] = useState("");
   const [transferType, setTransferType] = useState("airport");
 
+  // Live pricing state for preview
+  const [distanceKm, setDistanceKm] = useState("50");
+  const [baseFare, setBaseFare] = useState("1500");
+  const [baseKm, setBaseKm] = useState("20");
+  const [extraKmCharge, setExtraKmCharge] = useState("15");
+  const [taxSlab, setTaxSlab] = useState("5");
+
   const [addNewTransfer] = useAddTransferMutation();
+
+  const { data: citiesData } = useGetCitiesQuery();
+  const cities = citiesData?.data?.cities || [];
+  const selectedCity = cities.find((c) => c._id === selectedCityId);
+
+  // Live preview calculation
+  const distNum = Number(distanceKm) || 0;
+  const baseFareNum = Number(baseFare) || 0;
+  const baseKmNum = Number(baseKm) || 0;
+  const extraRateNum = Number(extraKmCharge) || 0;
+  const taxSlabNum = Number(taxSlab) || 0;
+
+  const extraKm = Math.max(0, distNum - baseKmNum);
+  const extraKmCost = extraKm * extraRateNum;
+  const subtotal = baseFareNum + extraKmCost;
+  const taxAmount = taxSlabNum > 0 ? (subtotal * taxSlabNum) / 100 : 0;
+  const totalEstimated = Math.round(subtotal + taxAmount);
 
   const { data: categories } = useGetCarCategoriesQuery(undefined, {
     selectFromResult: ({ data }) => ({
@@ -169,13 +199,22 @@ const AddTransferDialog = () => {
 
   const handleSave = async (e) => {
     e.preventDefault();
+    if (!selectedCity) {
+      toast.error("Please select a city");
+      return;
+    }
+    if (!selectedCategory) {
+      toast.error("Please choose an initial car category");
+      return;
+    }
+
     const f = e.target;
     const formData = new FormData(f);
     const data = Object.fromEntries(formData.entries());
 
     const name = data.name?.trim().toLowerCase().replace(/\s+/g, "-");
-    const cityName = data.city?.trim().toLowerCase().replace(/\s+/g, "-");
-    const stateName = data.state?.trim().toLowerCase().replace(/\s+/g, "-");
+    const cityName = selectedCity.city;
+    const stateName = selectedCity.state;
 
     await addNewTransfer({
       name,
@@ -200,6 +239,7 @@ const AddTransferDialog = () => {
         toast.success(res.message || "Transfer added successfully");
         f.reset();
         setSelectedCategory("");
+        setSelectedCityId("");
         setOpen(false);
       })
       .catch((err) => {
@@ -235,21 +275,36 @@ const AddTransferDialog = () => {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="transferCity">City</Label>
-                <Input
-                  id="transferCity"
-                  name="city"
-                  placeholder="e.g. Bangalore"
-                  required
-                />
+                <Label>Select City</Label>
+                <Select
+                  value={selectedCityId}
+                  onValueChange={setSelectedCityId}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Choose city" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {cities.map((c) => (
+                      <SelectItem key={c._id} value={c._id}>
+                        <span className="capitalize">
+                          {c.city?.replace(/-/g, " ")}
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="transferState">State</Label>
+                <Label>State</Label>
                 <Input
-                  id="transferState"
-                  name="state"
-                  placeholder="e.g. Karnataka"
-                  required
+                  value={
+                    selectedCity?.state
+                      ? selectedCity.state.replace(/-/g, " ")
+                      : ""
+                  }
+                  placeholder="Auto-filled from city"
+                  readOnly
+                  className="bg-muted capitalize cursor-not-allowed"
                 />
               </div>
             </div>
@@ -271,99 +326,165 @@ const AddTransferDialog = () => {
                 </Select>
               </div>
 
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="distanceKm" className="text-xs font-semibold">
+                      Route Distance (KM)
+                    </Label>
+                    <span className="text-[10px] text-muted-foreground">
+                      Physical trip KM
+                    </span>
+                  </div>
+                  <Input
+                    id="distanceKm"
+                    name="distanceKm"
+                    type="number"
+                    value={distanceKm}
+                    onChange={(e) => setDistanceKm(e.target.value)}
+                    placeholder="e.g. 50"
+                    required
+                    min={0}
+                  />
+                  <p className="text-[10px] text-muted-foreground">
+                    Estimated road distance for this transfer route.
+                  </p>
+                </div>
+              </div>
+
               <div className="space-y-2">
-                <Label htmlFor="distanceKm">Static Distance (KM)</Label>
-                <Input
-                  id="distanceKm"
-                  name="distanceKm"
-                  type="number"
-                  placeholder="e.g. 40"
+                <Label>Select Initial Car Category</Label>
+                <Select
                   required
-                  min={0}
-                />
+                  value={selectedCategory}
+                  onValueChange={(val) => setSelectedCategory(val)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Choose category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories?.map((i) => (
+                      <SelectItem key={i._id} value={i._id} className="capitalize">
+                        {i.category?.replace(/-/g, " ")}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-            </div>
 
-            <div className="space-y-2">
-              <Label>Select Initial Car Category</Label>
-              <Select
-                required
-                value={selectedCategory}
-                onValueChange={(val) => setSelectedCategory(val)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Choose category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories?.map((i) => (
-                    <SelectItem key={i._id} value={i._id} className="capitalize">
-                      {i.category?.replace(/-/g, " ")}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="space-y-1">
+                  <Label htmlFor="baseFare" className="text-xs font-semibold">
+                    Base Fare (₹)
+                  </Label>
+                  <Input
+                    id="baseFare"
+                    name="baseFare"
+                    type="number"
+                    value={baseFare}
+                    onChange={(e) => setBaseFare(e.target.value)}
+                    placeholder="1500"
+                    required
+                    min={0}
+                  />
+                  <p className="text-[10px] text-muted-foreground">
+                    Fare for included KM
+                  </p>
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="baseKm" className="text-xs font-semibold">
+                    Included Base KM
+                  </Label>
+                  <Input
+                    id="baseKm"
+                    name="baseKm"
+                    type="number"
+                    value={baseKm}
+                    onChange={(e) => setBaseKm(e.target.value)}
+                    placeholder="20"
+                    required
+                    min={0}
+                  />
+                  <p className="text-[10px] text-muted-foreground">
+                    Covered in Base Fare
+                  </p>
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="extraKmCharge" className="text-xs font-semibold">
+                    Extra/KM (₹)
+                  </Label>
+                  <Input
+                    id="extraKmCharge"
+                    name="extraKmCharge"
+                    type="number"
+                    value={extraKmCharge}
+                    onChange={(e) => setExtraKmCharge(e.target.value)}
+                    placeholder="15"
+                    required
+                    min={0}
+                  />
+                  <p className="text-[10px] text-muted-foreground">
+                    Per extra KM charge
+                  </p>
+                </div>
+              </div>
 
-            <div className="grid grid-cols-3 gap-3">
-              <div className="space-y-1">
-                <Label htmlFor="baseFare">Base Fare (₹)</Label>
-                <Input
-                  id="baseFare"
-                  name="baseFare"
-                  type="number"
-                  placeholder="1500"
-                  required
-                  min={0}
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <Label htmlFor="hillCharge" className="text-xs font-semibold">
+                    Hill Charge (₹)
+                  </Label>
+                  <Input
+                    id="hillCharge"
+                    name="hillCharge"
+                    type="number"
+                    placeholder="0"
+                    defaultValue={0}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="taxSlab" className="text-xs font-semibold">
+                    Tax Slab (%)
+                  </Label>
+                  <Input
+                    id="taxSlab"
+                    name="taxSlab"
+                    type="number"
+                    value={taxSlab}
+                    onChange={(e) => setTaxSlab(e.target.value)}
+                    placeholder="5"
+                  />
+                </div>
               </div>
-              <div className="space-y-1">
-                <Label htmlFor="baseKm">Base KM</Label>
-                <Input
-                  id="baseKm"
-                  name="baseKm"
-                  type="number"
-                  placeholder="20"
-                  defaultValue={20}
-                  required
-                  min={0}
-                />
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="extraKmCharge">Extra/KM (₹)</Label>
-                <Input
-                  id="extraKmCharge"
-                  name="extraKmCharge"
-                  type="number"
-                  placeholder="15"
-                  defaultValue={15}
-                  required
-                  min={0}
-                />
-              </div>
-            </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <Label htmlFor="hillCharge">Hill Charge (₹)</Label>
-                <Input
-                  id="hillCharge"
-                  name="hillCharge"
-                  type="number"
-                  placeholder="0"
-                  defaultValue={0}
-                />
+              {/* Live Interactive Calculation Preview */}
+              <div className="rounded-xl border border-orange-200 bg-orange-50/70 p-3.5 text-xs text-slate-800 space-y-1.5 shadow-sm">
+                <div className="flex items-center justify-between font-semibold text-orange-950">
+                  <span className="flex items-center gap-1.5">
+                    <Info className="h-4 w-4 text-orange-600 shrink-0" />
+                    How Pricing Works (Live Preview):
+                  </span>
+                  <span className="text-sm font-bold text-orange-600">
+                    ₹{totalEstimated.toLocaleString()}
+                  </span>
+                </div>
+                <div className="text-slate-600 leading-relaxed text-[11px]">
+                  {extraKm > 0 ? (
+                    <>
+                      • <strong>{baseKmNum} KM</strong> included in Base Fare (<strong>₹{baseFareNum}</strong>)
+                      <br />
+                      • <strong>{extraKm} Extra KM</strong> ({distNum} KM route − {baseKmNum} Base KM) × ₹{extraRateNum}/km = <strong>₹{extraKmCost}</strong>
+                      <br />
+                      • Base Subtotal: <strong>₹{subtotal}</strong> {taxSlabNum > 0 ? `+ ${taxSlabNum}% tax (₹${Math.round(taxAmount)})` : ""}
+                    </>
+                  ) : (
+                    <>
+                      • Total route distance (<strong>{distNum} KM</strong>) is within the included <strong>{baseKmNum} Base KM</strong>.
+                      <br />
+                      • Customer pays flat Base Fare: <strong>₹{baseFareNum}</strong> {taxSlabNum > 0 ? `+ ${taxSlabNum}% tax` : ""} (no extra KM charge).
+                    </>
+                  )}
+                </div>
               </div>
-              <div className="space-y-1">
-                <Label htmlFor="taxSlab">Tax Slab (%)</Label>
-                <Input
-                  id="taxSlab"
-                  name="taxSlab"
-                  type="number"
-                  placeholder="5"
-                  defaultValue={5}
-                />
-              </div>
-            </div>
           </div>
 
           <DialogFooter>
