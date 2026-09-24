@@ -2,7 +2,6 @@ import {
   LayoutDashboard,
   Route,
   Coins,
-  ReceiptText,
   Percent,
   Award,
   MapPin,
@@ -48,11 +47,6 @@ export const sidebarGroups = [
         title: "Rate Master",
         href: "/rate-master",
         icon: Coins,
-      },
-      {
-        title: "Charge Master",
-        href: "/charge-master",
-        icon: ReceiptText,
       },
       {
         title: "Permit Master",
