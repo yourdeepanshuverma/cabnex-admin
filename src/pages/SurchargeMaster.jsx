@@ -34,9 +34,17 @@ import { Label } from "@/components/ui/label";
 import Spinner from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   useCreateSurchargeMutation,
   useDeleteSurchargeMutation,
   useGetAllSurchargesQuery,
+  useGetCitiesQuery,
   useUpdateSurchargeMutation,
 } from "@/store/services/adminApi";
 import { MoreHorizontalIcon, PlusIcon, Percent } from "lucide-react";
@@ -47,14 +55,20 @@ import { toast } from "sonner";
 const SurchargeMaster = () => {
   const { data: surchargesData, isLoading: surchargesLoading } =
     useGetAllSurchargesQuery();
+  const { data: citiesData } = useGetCitiesQuery();
   const [createSurcharge] = useCreateSurchargeMutation();
   const [updateSurcharge] = useUpdateSurchargeMutation();
   const [deleteSurcharge] = useDeleteSurchargeMutation();
 
   const [addOpen, setAddOpen] = useState(false);
   const [editItem, setEditItem] = useState(null);
+  const [selectedCity, setSelectedCity] = useState("all");
 
   const surcharges = surchargesData?.data?.surcharges || [];
+  const rawCities = citiesData?.data?.cities || [];
+  const cities = rawCities
+    .slice()
+    .sort((a, b) => (a.city || "").localeCompare(b.city || ""));
 
   const handleAdd = async (e) => {
     e.preventDefault();
@@ -67,12 +81,14 @@ const SurchargeMaster = () => {
     try {
       const res = await createSurcharge({
         name: formData.get("name"),
+        city: selectedCity === "all" ? null : selectedCity,
         startDate: formData.get("startDate"),
         endDate: formData.get("endDate"),
         surchargePercent,
       }).unwrap();
       toast.success(res.message || "Surcharge period created successfully");
       setAddOpen(false);
+      setSelectedCity("all");
       e.target.reset();
     } catch (err) {
       toast.error(err?.data?.message || "Failed to create surcharge");
@@ -90,6 +106,7 @@ const SurchargeMaster = () => {
       const res = await updateSurcharge({
         id: editItem._id,
         name: formData.get("name"),
+        city: selectedCity === "all" ? null : selectedCity,
         startDate: formData.get("startDate"),
         endDate: formData.get("endDate"),
         surchargePercent,
@@ -146,6 +163,25 @@ const SurchargeMaster = () => {
       ),
     },
     {
+      accessorKey: "city",
+      header: "Scope / City",
+      cell: ({ row }) => {
+        const city = row.original.city;
+        if (!city) {
+          return (
+            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
+              All Cities (Global)
+            </span>
+          );
+        }
+        return (
+          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-200">
+            {city.city} {city.state ? `(${city.state})` : ""}
+          </span>
+        );
+      },
+    },
+    {
       accessorKey: "startDate",
       header: "Start Date",
       cell: ({ row }) => <div>{formatDate(row.getValue("startDate"))}</div>,
@@ -193,7 +229,12 @@ const SurchargeMaster = () => {
             <DropdownMenuContent className="space-y-0.5" align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => setEditItem(item)}>
+              <DropdownMenuItem
+                onClick={() => {
+                  setSelectedCity(item.city?._id || item.city || "all");
+                  setEditItem(item);
+                }}
+              >
                 Edit Period
               </DropdownMenuItem>
               <AlertDialog>
@@ -263,6 +304,31 @@ const SurchargeMaster = () => {
                 />
               </div>
 
+              <div className="space-y-2">
+                <Label>Applicable City</Label>
+                <Select
+                  value={selectedCity}
+                  onValueChange={setSelectedCity}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select city (or All Cities)" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-56">
+                    <SelectItem value="all">
+                      All Cities (Global Surcharge)
+                    </SelectItem>
+                    {cities.map((c) => (
+                      <SelectItem key={c._id} value={c._id}>
+                        {c.city} ({c.state})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Select a specific city for local peaks, or leave as All Cities for nationwide surcharges.
+                </p>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="startDate">Start Date</Label>
@@ -321,6 +387,28 @@ const SurchargeMaster = () => {
                   defaultValue={editItem.name}
                   required
                 />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Applicable City</Label>
+                <Select
+                  value={selectedCity}
+                  onValueChange={setSelectedCity}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select city (or All Cities)" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-56">
+                    <SelectItem value="all">
+                      All Cities (Global Surcharge)
+                    </SelectItem>
+                    {cities.map((c) => (
+                      <SelectItem key={c._id} value={c._id}>
+                        {c.city} ({c.state})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
