@@ -113,12 +113,17 @@ const City = () => {
       ),
     },
     {
-      accessorKey: "category.type",
-      header: "Categories",
+      accessorKey: "bufferKm",
+      header: "Buffer KM",
       cell: ({ row }) => (
-        <div className="capitalize">
-          {row.original.category?.map((i) => i.type?.category).filter(Boolean).join(", ") || "None"}
-        </div>
+        <div>{row.original.bufferKm || 0} KM</div>
+      ),
+    },
+    {
+      accessorKey: "hillCharge",
+      header: "Hill Surcharge",
+      cell: ({ row }) => (
+        <div>₹{row.original.hillCharge || 0}</div>
       ),
     },
     {
@@ -236,7 +241,6 @@ const AddCityDialog = ({ cities = [] }) => {
       .unwrap()
       .then((res) => {
         toast.success(res.message || "City added successfully");
-        toast.success("Add more categories from city view");
         form.reset();
         setIsCustomState(false);
         setCustomStateName("");
