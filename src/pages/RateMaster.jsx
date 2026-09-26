@@ -45,68 +45,100 @@ import {
   useDeleteRateMutation,
   useGetAllRatesQuery,
   useGetCarCategoriesQuery,
+  useGetCitiesQuery,
   useUpdateRateMutation,
 } from "@/store/services/adminApi";
-import { MoreHorizontalIcon, PlusIcon, CoinsIcon } from "lucide-react";
+import { MoreHorizontalIcon, PlusIcon, CoinsIcon, SearchIcon, XIcon } from "lucide-react";
 import PageHeader from "@/components/common/PageHeader";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { toast } from "sonner";
 
-const INDIAN_STATES = [
-  "andhra-pradesh",
-  "karnataka",
-  "kerala",
-  "tamil-nadu",
-  "telangana",
-  "puducherry",
-  "goa",
-  "maharashtra",
-  "delhi",
-  "rajasthan",
-  "uttar-pradesh",
-  "gujarat",
-  "west-bengal",
-];
+const formatCityName = (slug) => {
+  if (!slug) return "";
+  return slug
+    .split("-")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+};
 
 const RateMaster = () => {
   const { data: ratesData, isLoading: ratesLoading } = useGetAllRatesQuery();
   const { data: categoriesData } = useGetCarCategoriesQuery();
+  const { data: citiesData } = useGetCitiesQuery();
   const [createRate] = useCreateRateMutation();
   const [updateRate] = useUpdateRateMutation();
   const [deleteRate] = useDeleteRateMutation();
 
   const [addOpen, setAddOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("");
-  const [selectedState, setSelectedState] = useState("");
+  const [selectedCity, setSelectedCity] = useState("");
   const [selectedRateModel, setSelectedRateModel] = useState("daily-included-km");
   const [editItem, setEditItem] = useState(null);
 
+  // Filters
+  const [filterCity, setFilterCity] = useState("all");
+  const [filterCategory, setFilterCategory] = useState("all");
+  const [filterRateModel, setFilterRateModel] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
+
   const categories = categoriesData?.data?.categories || [];
   const rates = ratesData?.data?.rates || [];
+  const cities = citiesData?.data?.cities || [];
+
+  const filteredRates = useMemo(() => {
+    return rates.filter((r) => {
+      if (filterCity !== "all" && r.city?._id !== filterCity) return false;
+      if (filterCategory !== "all" && r.vehicleCategory?._id !== filterCategory) return false;
+      if (filterRateModel !== "all" && r.rateModel !== filterRateModel) return false;
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase().trim();
+        const cat = (r.vehicleCategory?.category || "").toLowerCase();
+        const city = (r.city?.city || "").toLowerCase();
+        const state = (r.city?.state || "").toLowerCase();
+        const model = (r.rateModel || "").toLowerCase();
+        return cat.includes(q) || city.includes(q) || state.includes(q) || model.includes(q);
+      }
+      return true;
+    });
+  }, [rates, filterCity, filterCategory, filterRateModel, searchQuery]);
+
+  const hasActiveFilters =
+    filterCity !== "all" ||
+    filterCategory !== "all" ||
+    filterRateModel !== "all" ||
+    searchQuery.trim() !== "";
+
+  const clearFilters = () => {
+    setFilterCity("all");
+    setFilterCategory("all");
+    setFilterRateModel("all");
+    setSearchQuery("");
+  };
 
   const handleAdd = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
 
-    if (!selectedCategory || !selectedState) {
-      toast.error("Please select a vehicle category and state");
+    if (!selectedCategory || !selectedCity) {
+      toast.error("Please select a vehicle category and city");
       return;
     }
 
     try {
       const res = await createRate({
         vehicleCategory: selectedCategory,
-        state: selectedState,
+        city: selectedCity,
         rateModel: selectedRateModel,
         baseRatePerDay: Number(formData.get("baseRatePerDay")),
         includedKmPerDay: Number(formData.get("includedKmPerDay")),
         extraKmRate: Number(formData.get("extraKmRate")),
         driverBataPerDay: Number(formData.get("driverBataPerDay")),
+        taxSlab: Number(formData.get("taxSlab")) || 0,
       }).unwrap();
       toast.success(res.message || "Rate card added successfully");
       setAddOpen(false);
       setSelectedCategory("");
-      setSelectedState("");
+      setSelectedCity("");
     } catch (err) {
       toast.error(err?.data?.message || "Failed to create rate card");
     }
@@ -123,6 +155,7 @@ const RateMaster = () => {
         includedKmPerDay: Number(formData.get("includedKmPerDay")),
         extraKmRate: Number(formData.get("extraKmRate")),
         driverBataPerDay: Number(formData.get("driverBataPerDay")),
+        taxSlab: Number(formData.get("taxSlab")) || 0,
         isActive: editItem.isActive,
       }).unwrap();
       toast.success(res.message || "Rate card updated successfully");
@@ -164,11 +197,20 @@ const RateMaster = () => {
       ),
     },
     {
-      accessorKey: "state",
-      header: "State",
+      accessorKey: "city.city",
+      header: "City",
       cell: ({ row }) => (
         <div className="capitalize">
-          {row.getValue("state")?.replace(/-/g, " ") || "-"}
+          {formatCityName(row.original.city?.city) || "-"}
+        </div>
+      ),
+    },
+    {
+      id: "state",
+      header: "State",
+      cell: ({ row }) => (
+        <div className="capitalize text-muted-foreground text-xs">
+          {formatCityName(row.original.city?.state) || "-"}
         </div>
       ),
     },
@@ -202,6 +244,15 @@ const RateMaster = () => {
       accessorKey: "driverBataPerDay",
       header: "Driver Bata / Day",
       cell: ({ row }) => <div>₹{row.getValue("driverBataPerDay")}</div>,
+    },
+    {
+      accessorKey: "taxSlab",
+      header: "Tax (GST)",
+      cell: ({ row }) => (
+        <span className="px-2 py-0.5 bg-green-50 text-green-700 border border-green-200 rounded text-xs font-medium">
+          {row.original.taxSlab ?? 5}%
+        </span>
+      ),
     },
     {
       accessorKey: "isActive",
@@ -247,7 +298,7 @@ const RateMaster = () => {
                     <AlertDialogDescription>
                       This will delete the rate card for{" "}
                       <b>{item.vehicleCategory?.category}</b> in{" "}
-                      <b>{item.state}</b>.
+                      <b>{formatCityName(item.city?.city)}</b>.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
@@ -273,9 +324,9 @@ const RateMaster = () => {
     <div className="flex flex-1 flex-col">
       <PageHeader
         title="Rate Master (Rate Cards)"
-        description="Per-vehicle, per-state pricing rules, daily minimum KM, and driver allowances"
+        description="Per-vehicle, per-city pricing rules, daily minimum KM, driver allowances, and tax slabs"
         icon={CoinsIcon}
-        badge={`${rates.length} Rate Cards Active`}
+        badge={`${filteredRates.length}${filteredRates.length !== rates.length ? ` of ${rates.length}` : ""} Rate Cards Active`}
         actions={
           <Dialog open={addOpen} onOpenChange={setAddOpen}>
             <DialogTrigger asChild>
@@ -287,7 +338,7 @@ const RateMaster = () => {
             <DialogHeader>
               <DialogTitle>Add New Rate Card</DialogTitle>
               <DialogDescription>
-                Define pricing rates for a vehicle category in a specific state.
+                Define pricing rates for a vehicle category in a specific city.
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleAdd} className="space-y-4">
@@ -313,19 +364,22 @@ const RateMaster = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>State</Label>
+                  <Label>City</Label>
                   <Select
-                    value={selectedState}
-                    onValueChange={setSelectedState}
+                    value={selectedCity}
+                    onValueChange={setSelectedCity}
                     required
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select state" />
+                      <SelectValue placeholder="Select city" />
                     </SelectTrigger>
-                    <SelectContent>
-                      {INDIAN_STATES.map((s) => (
-                        <SelectItem key={s} value={s} className="capitalize">
-                          {s.replace(/-/g, " ")}
+                    <SelectContent className="max-h-64">
+                      {cities.map((c) => (
+                        <SelectItem key={c._id} value={c._id} className="capitalize">
+                          {formatCityName(c.city)}{" "}
+                          <span className="text-muted-foreground text-[10px]">
+                            ({formatCityName(c.state)})
+                          </span>
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -381,7 +435,7 @@ const RateMaster = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="extraKmRate">Extra KM Rate (₹/KM)</Label>
                   <Input
@@ -405,6 +459,18 @@ const RateMaster = () => {
                     min={0}
                   />
                 </div>
+                <div className="space-y-2">
+                  <Label htmlFor="taxSlab">Tax / GST (%)</Label>
+                  <Input
+                    id="taxSlab"
+                    name="taxSlab"
+                    type="number"
+                    placeholder="e.g. 5"
+                    defaultValue={5}
+                    min={0}
+                    max={100}
+                  />
+                </div>
               </div>
 
               <DialogFooter>
@@ -421,7 +487,78 @@ const RateMaster = () => {
       }
     />
 
-      <AutopaginateTable columns={columns} data={rates} />
+      {/* Filters Toolbar */}
+      <div className="flex flex-wrap items-center gap-3 my-4 p-3 bg-muted/40 rounded-xl border border-border/60">
+        <div className="relative flex-1 min-w-[200px]">
+          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search by vehicle, city, state, or model..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9 bg-card h-9 text-sm"
+          />
+        </div>
+
+        <div className="w-[180px]">
+          <Select value={filterCity} onValueChange={setFilterCity}>
+            <SelectTrigger className="h-9 bg-card text-xs">
+              <SelectValue placeholder="All Cities" />
+            </SelectTrigger>
+            <SelectContent className="max-h-60">
+              <SelectItem value="all">All Cities ({cities.length})</SelectItem>
+              {cities.map((c) => (
+                <SelectItem key={c._id} value={c._id} className="capitalize">
+                  {formatCityName(c.city)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="w-[170px]">
+          <Select value={filterCategory} onValueChange={setFilterCategory}>
+            <SelectTrigger className="h-9 bg-card text-xs">
+              <SelectValue placeholder="All Vehicles" />
+            </SelectTrigger>
+            <SelectContent className="max-h-60">
+              <SelectItem value="all">All Vehicles ({categories.length})</SelectItem>
+              {categories.map((cat) => (
+                <SelectItem key={cat._id} value={cat._id} className="capitalize">
+                  {cat.category?.replace(/-/g, " ")}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="w-[170px]">
+          <Select value={filterRateModel} onValueChange={setFilterRateModel}>
+            <SelectTrigger className="h-9 bg-card text-xs">
+              <SelectValue placeholder="All Models" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Rate Models</SelectItem>
+              <SelectItem value="daily-included-km">Daily Included KM</SelectItem>
+              <SelectItem value="daily-all-km">Daily All KM</SelectItem>
+              <SelectItem value="package-fixed-km">Package Fixed KM</SelectItem>
+              <SelectItem value="fixed-route">Fixed Route</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {hasActiveFilters && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={clearFilters}
+            className="h-9 px-2 text-xs text-muted-foreground hover:text-foreground"
+          >
+            <XIcon className="h-3.5 w-3.5 mr-1" /> Clear
+          </Button>
+        )}
+      </div>
+
+      <AutopaginateTable columns={columns} data={filteredRates} />
 
       {/* Edit Rate Dialog */}
       {editItem && (
@@ -431,7 +568,7 @@ const RateMaster = () => {
               <DialogTitle>Edit Rate Card</DialogTitle>
               <DialogDescription className="capitalize">
                 {editItem.vehicleCategory?.category?.replace(/-/g, " ")} —{" "}
-                {editItem.state?.replace(/-/g, " ")}
+                {formatCityName(editItem.city?.city)}
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleEdit} className="space-y-4">
@@ -460,7 +597,7 @@ const RateMaster = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="editExtraKm">Extra KM Rate (₹/KM)</Label>
                   <Input
@@ -482,6 +619,17 @@ const RateMaster = () => {
                     defaultValue={editItem.driverBataPerDay}
                     required
                     min={0}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="editTaxSlab">Tax / GST (%)</Label>
+                  <Input
+                    id="editTaxSlab"
+                    name="taxSlab"
+                    type="number"
+                    defaultValue={editItem.taxSlab ?? 5}
+                    min={0}
+                    max={100}
                   />
                 </div>
               </div>
